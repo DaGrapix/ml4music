@@ -1,0 +1,11 @@
+
+## Intérêt de la régression ridge
+
+
+## 
+
+
+##
+
+
+## Performance

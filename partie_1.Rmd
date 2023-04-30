@@ -1,0 +1,15 @@
+
+
+## Analyse descriptive
+
+
+## Echantillon d'apprentissage
+
+
+## Estimation de modèle
+
+
+## Courbes ROC
+
+
+## Erreurs
