@@ -1,12 +1,204 @@
 
-
+```{r Librairie,include=FALSE, results='hide'}
+library(ggplot2)
+library(plyr)
+library(stats)
+library(tidyverse)
+rm(list=ls())
+```
 ## Analyse descriptive
+
+On commence par importer les données et regarder de manière générale de quoi est composé notre jeu de donnée.
+
+```{r import,include=TRUE}
+setwd(getwd())
+data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+
+dim(data)
+n <- nrow(data)
+p <- ncol(data)
+```
+
+Les dimensions du dataset importé sont correctes. Il y a bien 192 variables pour 4278 vecteurs de données.
+
+
+```{r, R.options=list(max.print=5)}
+summary(data)
+```
+
+
+```{r}
+## A FAIRE : Analyse uni-bi variée
+
+##Question : Comment choisir les variables qu'on observe ? 
+```
+
+```{r frequences,include=TRUE}
+# Proportion des genres musicaux
+freq<-plyr::count(data,'GENRE')
+
+freq
+
+prop_classical<-freq[1,2]/n
+prop_jazz<-freq[2,2]/n
+
+prop_classical
+prop_jazz
+```
+
+
+
+```{r}
+#ggplot(data, aes(x=reorder(GENRE, GENRE, function(x)-(length(x)/n)))) +
+#geom_bar(fill='red') +  labs(x='Genre')
+
+
+summary(data[,0:20])
+summary(data$PAR_SC_V)
+summary(data$PAR_SC)
+summary(data$PAR_ASC_V)
+```
+
+On remarque que les variables PAR_SC_V et PAR_SC ont des ordres de grandeurs bien supérieurs à celui des autres variables. Il est donc judicieux d'appliquer une transformation log afin d'obtenir des ordres de grandeurs similaires entre toutes nos variables explicatives.
+
+Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre des informations sur notre jeu de donnée.
+
+```{r transformation log et doublons}
+rm(list=ls())
+data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+
+data.old<-data
+
+data <- data.old[,-c(128:147)]
+data$PAR_SC <- log(data$PAR_SC)
+data$PAR_SC_V <- log(data$PAR_SC_V)
+
+n <- nrow(data)
+p <- ncol(data)
+```
+
+### Variables très corrélées
+```{r}
+corr <- cor(x=data[,-p])
+
+#selection des indices de la matrice de correlation > 0.99
+high.corr.index.new <- which(corr > 0.99, arr.ind = TRUE) %>% unname
+
+#selection des indices appartenant a la matrice triangulaire inferieure stricte,
+#pour retirer les doublons, ainsi que les elements diagonaux.
+lower.tri <- lower.tri(corr, diag=FALSE)
+high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+high.corr.index.new
+```
+```{r variables corrélées}
+correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                         names(data)[high.corr.index.new[,2]]), nrow=nrow(high.corr.index.new))
+correlated.variables
+```
+
+```{r indices dans le df original, include=FALSE}
+name.list <- as.vector(correlated.variables)
+high.corr.index <- matrix(which(names(data) %in% name.list), nrow=nrow(high.corr.index.new))
+high.corr.index
+```
+
+On remarque que les deux premiers couples de variables très corrélées sont en fait
+les deux dernières mesures associées respectivement aux variables PAR_ASE et PAR_ASEV.
+
+Le dernier couple de corrélation très élevée montre que la variable *PAR_ZCD* est très corrélée
+avec *PAR_ZCD_10FR_MEAN* qui semble être une moyenne de *PAR_ZCD*.
+
+On veillera à bien retirer à chaque fois l'une des deux variables très corrélées,
+en effet les garder augmenterait la dimmension et la complexité du modèle, sans pour autant
+apporter de l'information utile.
+
+On retirera par exemple les variables *PAR_ASE34*, *PAR_ASEV34* et *PAR_ZCD_10FR_MEAN*
+
+```{r}
+data <- data[,-high.corr.index.new[,1]]
+n <- nrow(data)
+p <- ncol(data)
+
+dim(data)
+```
+
+
+### Cas des variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV*
+
+Dans le but de continuer notre analyse et de pouvoir utiliser la fonction glm par la suite , il nous faut créer une variable catégorielle y qui prenne comme valeur uniquement 0 et 1.
+Par exemple, le Jazz vaut 0 et le classique vaut 1.
+
+```{r Création de la variable y,include=TRUE}
+
+y<-ifelse(data$GENRE=="Classical",1,0)
+
+## On ajoute cette colonne au dataframe
+
+ndata<-cbind(data,y)
+
+## Représentation des valeurs d'une variable selon son genre musical, plot classique et boxplot.
+
+myplot = function(x,Y,xlab=""){
+  plot(x,Y,xlab=xlab, col=Y+1,pch=Y+1);
+  boxplot(x~Y,xlab=xlab,horizontal=TRUE)
+}
+
+myplot(ndata$PAR_ASE_M,ndata$y,"PAR_ASE_M")    
+myplot(ndata$PAR_ASE_MV,ndata$y,"PAR_ASE_MV")
+myplot(ndata$PAR_SFM_M,ndata$y,"PAR_SFM_M")
+myplot(ndata$PAR_SFM_MV,ndata$y,"PAR_SFM_MV")
+
+```
+
+Je pense que ce qu'il faut voir c'est que des fortes valeurs de PAR_ASE_M par exemple, la musique a plus de chance d'être Classique alors que pour des faibles valeurs de PAR_ASE_M, elle a plus de chance d'être du Jazz.
+De même, pour des grandes valeurs de PAR_ASE_MV,PAR_SFM_M, la musique aura plus de chance d'être du Jazz.
+
+```{r}
+library(corrplot)
+var.data <- data[ , names(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV")]
+var.corr <- cor(var.data)
+corrplot(var.corr)
+
+
+```
 
 
 ## Echantillon d'apprentissage
-
+```{r}
+set.seed(103)
+train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
+```
 
 ## Estimation de modèle
+
+On commence par créer nos différents modèles à l'aide de la fonction glm du package stats.
+
+
+
+```{r Définition des modèles,include=TRUE}
+
+
+
+Mod0<-glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV,family=binomial,data=ndata)
+
+
+## Pour ModT, il faut enlever les variables fortement corrélées et peut être aussi les autres qui sont évoquées.
+## Je crois que les variables fortement corrélées ont déjà enlever, il faut donc voir ce qu'on fait des autres.
+
+## Étape 1 : modifier ndata en fonction des variables que l'on enlève
+
+## Étape 2 : Définir le modèle :
+
+ModT<-glm(y~.,family=binomial,data=ndata)
+
+## Mod1 et Mod2 dépendent de ModT
+
+## ModAIC
+
+
+
+
+```
 
 
 ## Courbes ROC
