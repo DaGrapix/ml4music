@@ -1,10 +1,70 @@
 
+```{r Librairie,include=TRUE}
+library(ggplot2)
+library(plyr)
 
+```
 ## Analyse descriptive
+
+On commence par importer les données et regarder de manière générale de quoi est composé notre jeu de donnée.
+
+```{r Analyse descriptive,include=TRUE}
+setwd(getwd())
+data=read.csv("Music_2023.txt",sep=";",header=TRUE)
+
+# On vérifie que les données sont bien de la bonne dimension.
+
+
+dim(data)
+n<-nrow(data)
+summary(data)
+
+
+## A FAIRE : Analyse uni-bi variée
+
+##Question : Comment choisir les variables qu'on observe ? 
+
+
+
+
+# Proportion des genres musicaux
+
+
+freq<-count(data,'GENRE')
+
+freq
+
+prop_classical<-freq[1,2]/n
+prop_jazz<-freq[2,2]/n
+
+prop_classical
+prop_jazz
+
+
+#ggplot(data, aes(x=reorder(GENRE, GENRE, function(x)-(length(x)/n)))) +
+#geom_bar(fill='red') +  labs(x='Genre')
+
+
+summary(data[,0:20])
+summary(data$PAR_SC_V)
+summary(data$PAR_SC)
+summary(data$PAR_ASC_V)
+
+## On remarque que les variables PAR_SC_V et PAR_SC ont des ordres de grandeurs bien supérieurs à celui des autres variables. Il est donc judicieux d'appliquer une transformation log afin d'obtenir des ordres de grandeurs similaires entre toutes nos variables explicatives
+
+
+
+## Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre des informations sur notre jeu de donnée.
+
+
+## A FAIRE : Variable corrélée 
+```
 
 
 ## Echantillon d'apprentissage
 
+set.seed(103)
+train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
 
 ## Estimation de modèle
 
