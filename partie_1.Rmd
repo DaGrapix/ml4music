@@ -17,7 +17,7 @@ data=read.csv("Music_2023.txt",sep=";",header=TRUE)
 
 dim(data)
 n<-nrow(data)
-summary(data)
+#summary(data)
 
 
 ## A FAIRE : Analyse uni-bi variée
@@ -52,12 +52,32 @@ summary(data$PAR_ASC_V)
 
 ## On remarque que les variables PAR_SC_V et PAR_SC ont des ordres de grandeurs bien supérieurs à celui des autres variables. Il est donc judicieux d'appliquer une transformation log afin d'obtenir des ordres de grandeurs similaires entre toutes nos variables explicatives
 
-
+data$PAR_SC_V<-log(data$PAR_SC_V)
+data$PAR_SC<-log(data$PAR_SC)
 
 ## Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre des informations sur notre jeu de donnée.
 
+col_to_drop<-c(148:167)
+
+data<-data[-col_to_drop]
+
+dim(data)
+
+#summary(data)
+
+
+
 
 ## A FAIRE : Variable corrélée 
+
+p<-ncol(data)
+
+mcor<-cor(data[,-p])
+
+cor_pos<-which(mcor!=1 & mcor>=0.99,arr.ind=TRUE)
+cor_pos
+
+
 ```
 
 

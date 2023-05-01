@@ -369,386 +369,10 @@ data=read.csv(&quot;Music_2023.txt&quot;,sep=&quot;;&quot;,header=TRUE)
 dim(data)</code></pre>
 <pre><code>## [1] 4278  192</code></pre>
 <pre class="r"><code>n&lt;-nrow(data)
-summary(data)</code></pre>
-<pre><code>##      PAR_TC           PAR_SC          PAR_SC_V          PAR_ASE1      
-##  Min.   :0.8377   Min.   :  34.1   Min.   :    605   Min.   :-0.2225  
-##  1st Qu.:2.3254   1st Qu.: 450.4   1st Qu.:  22593   1st Qu.:-0.1721  
-##  Median :2.4996   Median : 589.8   Median :  46062   Median :-0.1571  
-##  Mean   :2.4817   Mean   : 632.6   Mean   : 105223   Mean   :-0.1557  
-##  3rd Qu.:2.6437   3rd Qu.: 766.9   3rd Qu.:  99092   3rd Qu.:-0.1403  
-##  Max.   :4.4046   Max.   :3044.4   Max.   :5003700   Max.   :-0.0533  
-##     PAR_ASE2           PAR_ASE3           PAR_ASE4           PAR_ASE5       
-##  Min.   :-0.22612   Min.   :-0.22728   Min.   :-0.22387   Min.   :-0.22444  
-##  1st Qu.:-0.17257   1st Qu.:-0.16659   1st Qu.:-0.15751   1st Qu.:-0.15010  
-##  Median :-0.15761   Median :-0.14988   Median :-0.13994   Median :-0.13323  
-##  Mean   :-0.15529   Mean   :-0.14902   Mean   :-0.14072   Mean   :-0.13520  
-##  3rd Qu.:-0.13884   3rd Qu.:-0.13165   3rd Qu.:-0.12325   3rd Qu.:-0.11791  
-##  Max.   :-0.05673   Max.   :-0.05856   Max.   :-0.06055   Max.   :-0.06524  
-##     PAR_ASE6           PAR_ASE7           PAR_ASE8           PAR_ASE9       
-##  Min.   :-0.22526   Min.   :-0.21973   Min.   :-0.22003   Min.   :-0.20936  
-##  1st Qu.:-0.14389   1st Qu.:-0.14104   1st Qu.:-0.13740   1st Qu.:-0.13584  
-##  Median :-0.12965   Median :-0.12812   Median :-0.12569   Median :-0.12458  
-##  Mean   :-0.13162   Mean   :-0.13030   Mean   :-0.12736   Mean   :-0.12557  
-##  3rd Qu.:-0.11625   3rd Qu.:-0.11649   3rd Qu.:-0.11485   3rd Qu.:-0.11373  
-##  Max.   :-0.06715   Max.   :-0.07032   Max.   :-0.06982   Max.   :-0.06812  
-##    PAR_ASE10          PAR_ASE11          PAR_ASE12          PAR_ASE13       
-##  Min.   :-0.20371   Min.   :-0.19532   Min.   :-0.18544   Min.   :-0.19821  
-##  1st Qu.:-0.13388   1st Qu.:-0.13159   1st Qu.:-0.13081   1st Qu.:-0.13237  
-##  Median :-0.12289   Median :-0.12133   Median :-0.12116   Median :-0.12172  
-##  Mean   :-0.12287   Mean   :-0.12135   Mean   :-0.12079   Mean   :-0.12226  
-##  3rd Qu.:-0.11129   3rd Qu.:-0.11013   3rd Qu.:-0.11047   3rd Qu.:-0.11110  
-##  Max.   :-0.06098   Max.   :-0.05382   Max.   :-0.05741   Max.   :-0.06622  
-##    PAR_ASE14          PAR_ASE15          PAR_ASE16          PAR_ASE17       
-##  Min.   :-0.17919   Min.   :-0.18552   Min.   :-0.18993   Min.   :-0.20037  
-##  1st Qu.:-0.13284   1st Qu.:-0.13726   1st Qu.:-0.14191   1st Qu.:-0.14447  
-##  Median :-0.12124   Median :-0.12668   Median :-0.13256   Median :-0.13446  
-##  Mean   :-0.12198   Mean   :-0.12728   Mean   :-0.13274   Mean   :-0.13535  
-##  3rd Qu.:-0.11027   3rd Qu.:-0.11721   3rd Qu.:-0.12248   3rd Qu.:-0.12540  
-##  Max.   :-0.06047   Max.   :-0.06275   Max.   :-0.07463   Max.   :-0.06379  
-##    PAR_ASE18          PAR_ASE19          PAR_ASE20          PAR_ASE21      
-##  Min.   :-0.20336   Min.   :-0.20168   Min.   :-0.20128   Min.   :-0.2064  
-##  1st Qu.:-0.14913   1st Qu.:-0.15236   1st Qu.:-0.15658   1st Qu.:-0.1619  
-##  Median :-0.13882   Median :-0.14175   Median :-0.14616   Median :-0.1504  
-##  Mean   :-0.13937   Mean   :-0.14254   Mean   :-0.14712   Mean   :-0.1516  
-##  3rd Qu.:-0.12905   3rd Qu.:-0.13233   3rd Qu.:-0.13708   3rd Qu.:-0.1413  
-##  Max.   :-0.07637   Max.   :-0.07133   Max.   :-0.07739   Max.   :-0.0893  
-##    PAR_ASE22          PAR_ASE23         PAR_ASE24         PAR_ASE25      
-##  Min.   :-0.20911   Min.   :-0.2181   Min.   :-0.2259   Min.   :-0.2320  
-##  1st Qu.:-0.16904   1st Qu.:-0.1739   1st Qu.:-0.1802   1st Qu.:-0.1869  
-##  Median :-0.15463   Median :-0.1603   Median :-0.1680   Median :-0.1748  
-##  Mean   :-0.15664   Mean   :-0.1619   Mean   :-0.1688   Mean   :-0.1756  
-##  3rd Qu.:-0.14487   3rd Qu.:-0.1500   3rd Qu.:-0.1575   3rd Qu.:-0.1644  
-##  Max.   :-0.09509   Max.   :-0.1068   Max.   :-0.1088   Max.   :-0.1049  
-##    PAR_ASE26         PAR_ASE27         PAR_ASE28         PAR_ASE29      
-##  Min.   :-0.2324   Min.   :-0.2376   Min.   :-0.2467   Min.   :-0.2577  
-##  1st Qu.:-0.1950   1st Qu.:-0.2041   1st Qu.:-0.2111   1st Qu.:-0.2191  
-##  Median :-0.1849   Median :-0.1941   Median :-0.2010   Median :-0.2085  
-##  Mean   :-0.1849   Mean   :-0.1938   Mean   :-0.2008   Mean   :-0.2084  
-##  3rd Qu.:-0.1754   3rd Qu.:-0.1843   3rd Qu.:-0.1911   3rd Qu.:-0.1982  
-##  Max.   :-0.1020   Max.   :-0.1316   Max.   :-0.1219   Max.   :-0.1404  
-##    PAR_ASE30         PAR_ASE31         PAR_ASE32         PAR_ASE33      
-##  Min.   :-0.2721   Min.   :-0.2866   Min.   :-0.2916   Min.   :-0.3461  
-##  1st Qu.:-0.2285   1st Qu.:-0.2380   1st Qu.:-0.2560   1st Qu.:-0.3067  
-##  Median :-0.2168   Median :-0.2255   Median :-0.2427   Median :-0.2932  
-##  Mean   :-0.2165   Mean   :-0.2250   Mean   :-0.2413   Mean   :-0.2916  
-##  3rd Qu.:-0.2051   3rd Qu.:-0.2121   3rd Qu.:-0.2275   3rd Qu.:-0.2770  
-##  Max.   :-0.1467   Max.   :-0.1680   Max.   :-0.1739   Max.   :-0.2125  
-##    PAR_ASE34         PAR_ASE_M         PAR_ASEV1           PAR_ASEV2        
-##  Min.   :-0.3440   Min.   :-0.1689   Min.   :6.173e-05   Min.   :6.159e-05  
-##  1st Qu.:-0.3040   1st Qu.:-0.1641   1st Qu.:2.355e-04   1st Qu.:3.473e-04  
-##  Median :-0.2903   Median :-0.1633   Median :3.231e-04   Median :4.372e-04  
-##  Mean   :-0.2887   Mean   :-0.1632   Mean   :3.927e-04   Mean   :5.241e-04  
-##  3rd Qu.:-0.2741   3rd Qu.:-0.1624   3rd Qu.:4.774e-04   3rd Qu.:6.035e-04  
-##  Max.   :-0.2072   Max.   :-0.1582   Max.   :1.843e-03   Max.   :2.691e-03  
-##    PAR_ASEV3           PAR_ASEV4           PAR_ASEV5        
-##  Min.   :0.0000474   Min.   :0.0000432   Min.   :3.915e-05  
-##  1st Qu.:0.0002871   1st Qu.:0.0002597   1st Qu.:2.700e-04  
-##  Median :0.0003972   Median :0.0003695   Median :3.764e-04  
-##  Mean   :0.0004708   Mean   :0.0004385   Mean   :4.490e-04  
-##  3rd Qu.:0.0005617   3rd Qu.:0.0005321   3rd Qu.:5.458e-04  
-##  Max.   :0.0032268   Max.   :0.0028281   Max.   :2.806e-03  
-##    PAR_ASEV6           PAR_ASEV7           PAR_ASEV8        
-##  Min.   :5.161e-05   Min.   :3.932e-05   Min.   :3.026e-05  
-##  1st Qu.:2.749e-04   1st Qu.:2.726e-04   1st Qu.:2.458e-04  
-##  Median :3.806e-04   Median :3.841e-04   Median :3.429e-04  
-##  Mean   :4.543e-04   Mean   :4.489e-04   Mean   :4.032e-04  
-##  3rd Qu.:5.613e-04   3rd Qu.:5.524e-04   3rd Qu.:4.913e-04  
-##  Max.   :2.373e-03   Max.   :2.516e-03   Max.   :3.115e-03  
-##    PAR_ASEV9           PAR_ASEV10          PAR_ASEV11       
-##  Min.   :3.372e-05   Min.   :3.018e-05   Min.   :3.769e-05  
-##  1st Qu.:2.656e-04   1st Qu.:2.640e-04   1st Qu.:2.589e-04  
-##  Median :3.511e-04   Median :3.502e-04   Median :3.440e-04  
-##  Mean   :4.120e-04   Mean   :4.056e-04   Mean   :4.082e-04  
-##  3rd Qu.:4.926e-04   3rd Qu.:4.818e-04   3rd Qu.:4.875e-04  
-##  Max.   :2.620e-03   Max.   :2.377e-03   Max.   :2.061e-03  
-##    PAR_ASEV12          PAR_ASEV13          PAR_ASEV14       
-##  Min.   :3.239e-05   Min.   :2.998e-05   Min.   :1.401e-05  
-##  1st Qu.:2.468e-04   1st Qu.:2.869e-04   1st Qu.:2.827e-04  
-##  Median :3.397e-04   Median :3.942e-04   Median :3.964e-04  
-##  Mean   :3.977e-04   Mean   :4.596e-04   Mean   :4.522e-04  
-##  3rd Qu.:4.850e-04   3rd Qu.:5.637e-04   3rd Qu.:5.454e-04  
-##  Max.   :2.507e-03   Max.   :2.673e-03   Max.   :4.140e-03  
-##    PAR_ASEV15          PAR_ASEV16          PAR_ASEV17       
-##  Min.   :2.835e-05   Min.   :3.672e-05   Min.   :3.471e-05  
-##  1st Qu.:2.731e-04   1st Qu.:2.583e-04   1st Qu.:2.710e-04  
-##  Median :3.875e-04   Median :3.766e-04   Median :3.827e-04  
-##  Mean   :4.566e-04   Mean   :4.390e-04   Mean   :4.445e-04  
-##  3rd Qu.:5.671e-04   3rd Qu.:5.479e-04   3rd Qu.:5.539e-04  
-##  Max.   :3.856e-03   Max.   :2.043e-03   Max.   :2.149e-03  
-##    PAR_ASEV18          PAR_ASEV19          PAR_ASEV20       
-##  Min.   :2.109e-05   Min.   :2.617e-05   Min.   :2.257e-05  
-##  1st Qu.:2.673e-04   1st Qu.:2.578e-04   1st Qu.:2.510e-04  
-##  Median :3.800e-04   Median :3.630e-04   Median :3.546e-04  
-##  Mean   :4.414e-04   Mean   :4.231e-04   Mean   :4.061e-04  
-##  3rd Qu.:5.465e-04   3rd Qu.:5.167e-04   3rd Qu.:5.032e-04  
-##  Max.   :2.152e-03   Max.   :2.254e-03   Max.   :2.302e-03  
-##    PAR_ASEV21          PAR_ASEV22          PAR_ASEV23       
-##  Min.   :1.905e-05   Min.   :2.055e-05   Min.   :1.664e-05  
-##  1st Qu.:2.151e-04   1st Qu.:2.080e-04   1st Qu.:1.962e-04  
-##  Median :3.031e-04   Median :2.871e-04   Median :2.731e-04  
-##  Mean   :3.517e-04   Mean   :3.343e-04   Mean   :3.198e-04  
-##  3rd Qu.:4.266e-04   3rd Qu.:4.055e-04   3rd Qu.:3.927e-04  
-##  Max.   :2.017e-03   Max.   :2.111e-03   Max.   :2.176e-03  
-##    PAR_ASEV24          PAR_ASEV25          PAR_ASEV26       
-##  Min.   :1.446e-05   Min.   :0.0000164   Min.   :1.758e-05  
-##  1st Qu.:1.800e-04   1st Qu.:0.0001637   1st Qu.:1.543e-04  
-##  Median :2.494e-04   Median :0.0002328   Median :2.162e-04  
-##  Mean   :2.916e-04   Mean   :0.0002629   Mean   :2.467e-04  
-##  3rd Qu.:3.544e-04   3rd Qu.:0.0003249   3rd Qu.:3.017e-04  
-##  Max.   :1.613e-03   Max.   :0.0016206   Max.   :2.158e-03  
-##    PAR_ASEV27          PAR_ASEV28          PAR_ASEV29       
-##  Min.   :1.555e-05   Min.   :1.387e-05   Min.   :1.253e-05  
-##  1st Qu.:1.459e-04   1st Qu.:1.425e-04   1st Qu.:1.445e-04  
-##  Median :2.008e-04   Median :1.964e-04   Median :2.015e-04  
-##  Mean   :2.283e-04   Mean   :2.256e-04   Mean   :2.294e-04  
-##  3rd Qu.:2.776e-04   3rd Qu.:2.719e-04   3rd Qu.:2.820e-04  
-##  Max.   :2.434e-03   Max.   :1.748e-03   Max.   :1.714e-03  
-##    PAR_ASEV30          PAR_ASEV31          PAR_ASEV32       
-##  Min.   :1.193e-05   Min.   :0.0000119   Min.   :1.489e-05  
-##  1st Qu.:1.626e-04   1st Qu.:0.0002154   1st Qu.:3.135e-04  
-##  Median :2.262e-04   Median :0.0003042   Median :4.447e-04  
-##  Mean   :2.550e-04   Mean   :0.0003386   Mean   :4.920e-04  
-##  3rd Qu.:3.066e-04   3rd Qu.:0.0004209   3rd Qu.:6.184e-04  
-##  Max.   :1.592e-03   Max.   :0.0016175   Max.   :2.292e-03  
-##    PAR_ASEV33          PAR_ASEV34          PAR_ASE_MV           PAR_ASC      
-##  Min.   :6.645e-06   Min.   :5.994e-06   Min.   :6.486e-05   Min.   :-4.819  
-##  1st Qu.:2.711e-04   1st Qu.:2.681e-04   1st Qu.:3.076e-04   1st Qu.:-1.770  
-##  Median :3.586e-04   Median :3.610e-04   Median :3.687e-04   Median :-1.317  
-##  Mean   :3.954e-04   Mean   :3.978e-04   Mean   :3.852e-04   Mean   :-1.397  
-##  3rd Qu.:4.679e-04   3rd Qu.:4.730e-04   3rd Qu.:4.415e-04   3rd Qu.:-0.957  
-##  Max.   :3.111e-03   Max.   :3.115e-03   Max.   :1.117e-03   Max.   : 1.384  
-##    PAR_ASC_V           PAR_ASS         PAR_ASS_V           PAR_SFM1      
-##  Min.   :0.005926   Min.   :0.3243   Min.   :0.004533   Min.   :0.01903  
-##  1st Qu.:0.162052   1st Qu.:0.8576   1st Qu.:0.048934   1st Qu.:0.15221  
-##  Median :0.290915   Median :1.0535   Median :0.073644   Median :0.16681  
-##  Mean   :0.425129   Mean   :1.0565   Mean   :0.092497   Mean   :0.16211  
-##  3rd Qu.:0.528360   3rd Qu.:1.2390   3rd Qu.:0.115035   3rd Qu.:0.17771  
-##  Max.   :3.506300   Max.   :2.0407   Max.   :0.769860   Max.   :0.21020  
-##     PAR_SFM2            PAR_SFM3           PAR_SFM4          PAR_SFM5       
-##  Min.   :0.0007556   Min.   :0.003826   Min.   :0.01255   Min.   :0.006317  
-##  1st Qu.:0.0044015   1st Qu.:0.077263   1st Qu.:0.07357   1st Qu.:0.045569  
-##  Median :0.0049311   Median :0.088081   Median :0.08459   Median :0.054078  
-##  Mean   :0.0048153   Mean   :0.085744   Mean   :0.08279   Mean   :0.053073  
-##  3rd Qu.:0.0053621   3rd Qu.:0.097158   3rd Qu.:0.09387   3rd Qu.:0.061328  
-##  Max.   :0.0067953   Max.   :0.125920   Max.   :0.12957   Max.   :0.087032  
-##     PAR_SFM6           PAR_SFM7           PAR_SFM8           PAR_SFM9       
-##  Min.   :0.003322   Min.   :0.002238   Min.   :0.002652   Min.   :0.002874  
-##  1st Qu.:0.036853   1st Qu.:0.027204   1st Qu.:0.020626   1st Qu.:0.037770  
-##  Median :0.044485   Median :0.032770   Median :0.025191   Median :0.046763  
-##  Mean   :0.043748   Mean   :0.032687   Mean   :0.025347   Mean   :0.047150  
-##  3rd Qu.:0.051382   3rd Qu.:0.038328   3rd Qu.:0.029918   3rd Qu.:0.055839  
-##  Max.   :0.075058   Max.   :0.062164   Max.   :0.050139   Max.   :0.103040  
-##    PAR_SFM10          PAR_SFM11          PAR_SFM12          PAR_SFM13       
-##  Min.   :0.001769   Min.   :0.003033   Min.   :0.002769   Min.   :0.008771  
-##  1st Qu.:0.031469   1st Qu.:0.023675   1st Qu.:0.020237   1st Qu.:0.052524  
-##  Median :0.039372   Median :0.030415   Median :0.025964   Median :0.065728  
-##  Mean   :0.040099   Mean   :0.030926   Mean   :0.026378   Mean   :0.065634  
-##  3rd Qu.:0.048057   3rd Qu.:0.037497   3rd Qu.:0.031494   3rd Qu.:0.078443  
-##  Max.   :0.090716   Max.   :0.074870   Max.   :0.063749   Max.   :0.129400  
-##    PAR_SFM14          PAR_SFM15          PAR_SFM16           PAR_SFM17        
-##  Min.   :0.005843   Min.   :0.005102   Min.   :0.0007143   Min.   :0.0008047  
-##  1st Qu.:0.038014   1st Qu.:0.034658   1st Qu.:0.0283765   1st Qu.:0.0683265  
-##  Median :0.048646   Median :0.044666   Median :0.0367365   Median :0.0852040  
-##  Mean   :0.049114   Mean   :0.044919   Mean   :0.0370107   Mean   :0.0832753  
-##  3rd Qu.:0.059832   3rd Qu.:0.054505   3rd Qu.:0.0451000   3rd Qu.:0.0993780  
-##  Max.   :0.098512   Max.   :0.089548   Max.   :0.0751970   Max.   :0.1373700  
-##    PAR_SFM18         PAR_SFM19          PAR_SFM20         PAR_SFM21      
-##  Min.   :0.00818   Min.   :0.004567   Min.   :0.00281   Min.   :0.01326  
-##  1st Qu.:0.06125   1st Qu.:0.049001   1st Qu.:0.03993   1st Qu.:0.08849  
-##  Median :0.07559   Median :0.060914   Median :0.04924   Median :0.10173  
-##  Mean   :0.07402   Mean   :0.059212   Mean   :0.04846   Mean   :0.10015  
-##  3rd Qu.:0.08836   3rd Qu.:0.070744   3rd Qu.:0.05764   3rd Qu.:0.11321  
-##  Max.   :0.12243   Max.   :0.097197   Max.   :0.08151   Max.   :0.14142  
-##    PAR_SFM22         PAR_SFM23          PAR_SFM24         PAR_SFM_M      
-##  Min.   :0.01732   Min.   :0.002324   Min.   :0.07733   Min.   :0.02342  
-##  1st Qu.:0.07492   1st Qu.:0.020551   1st Qu.:0.08242   1st Qu.:0.05311  
-##  Median :0.08490   Median :0.037435   Median :0.08269   Median :0.05918  
-##  Mean   :0.08483   Mean   :0.041615   Mean   :0.08246   Mean   :0.05856  
-##  3rd Qu.:0.09491   3rd Qu.:0.060815   3rd Qu.:0.08282   3rd Qu.:0.06414  
-##  Max.   :0.12400   Max.   :0.099284   Max.   :0.08291   Max.   :0.08927  
-##    PAR_SFMV1           PAR_SFMV2           PAR_SFMV3        
-##  Min.   :9.079e-05   Min.   :2.098e-07   Min.   :4.843e-05  
-##  1st Qu.:2.367e-03   1st Qu.:2.658e-06   1st Qu.:1.065e-03  
-##  Median :2.859e-03   Median :3.193e-06   Median :1.268e-03  
-##  Mean   :2.971e-03   Mean   :3.266e-06   Mean   :1.304e-03  
-##  3rd Qu.:3.480e-03   3rd Qu.:3.786e-06   3rd Qu.:1.509e-03  
-##  Max.   :8.374e-03   Max.   :7.957e-06   Max.   :3.265e-03  
-##    PAR_SFMV4           PAR_SFMV5           PAR_SFMV6        
-##  Min.   :0.0001888   Min.   :4.028e-05   Min.   :1.322e-05  
-##  1st Qu.:0.0011264   1st Qu.:5.527e-04   1st Qu.:4.138e-04  
-##  Median :0.0013176   Median :6.566e-04   Median :4.919e-04  
-##  Mean   :0.0013458   Mean   :6.686e-04   Mean   :5.005e-04  
-##  3rd Qu.:0.0015427   3rd Qu.:7.723e-04   3rd Qu.:5.789e-04  
-##  Max.   :0.0031415   Max.   :1.446e-03   Max.   :1.212e-03  
-##    PAR_SFMV7           PAR_SFMV8           PAR_SFMV9        
-##  Min.   :1.782e-05   Min.   :6.808e-06   Min.   :1.012e-05  
-##  1st Qu.:2.457e-04   1st Qu.:1.586e-04   1st Qu.:4.932e-04  
-##  Median :2.933e-04   Median :1.926e-04   Median :6.096e-04  
-##  Mean   :3.024e-04   Mean   :1.994e-04   Mean   :6.356e-04  
-##  3rd Qu.:3.524e-04   3rd Qu.:2.351e-04   3rd Qu.:7.503e-04  
-##  Max.   :7.040e-04   Max.   :5.486e-04   Max.   :1.822e-03  
-##    PAR_SFMV10          PAR_SFMV11          PAR_SFMV12       
-##  Min.   :0.0000141   Min.   :0.0000128   Min.   :6.682e-06  
-##  1st Qu.:0.0003559   1st Qu.:0.0002139   1st Qu.:1.471e-04  
-##  Median :0.0004490   Median :0.0002799   Median :1.893e-04  
-##  Mean   :0.0004708   Mean   :0.0002941   Mean   :2.013e-04  
-##  3rd Qu.:0.0005626   3rd Qu.:0.0003576   3rd Qu.:2.418e-04  
-##  Max.   :0.0016281   Max.   :0.0010666   Max.   :7.319e-04  
-##    PAR_SFMV13          PAR_SFMV14          PAR_SFMV15       
-##  Min.   :3.625e-05   Min.   :0.0000313   Min.   :1.754e-05  
-##  1st Qu.:6.895e-04   1st Qu.:0.0003661   1st Qu.:2.966e-04  
-##  Median :8.634e-04   Median :0.0004732   Median :3.847e-04  
-##  Mean   :9.081e-04   Mean   :0.0005063   Mean   :4.145e-04  
-##  3rd Qu.:1.083e-03   3rd Qu.:0.0006177   3rd Qu.:5.076e-04  
-##  Max.   :3.369e-03   Max.   :0.0017353   Max.   :1.477e-03  
-##    PAR_SFMV16          PAR_SFMV17          PAR_SFMV18       
-##  Min.   :4.338e-07   Min.   :9.470e-07   Min.   :1.104e-05  
-##  1st Qu.:1.998e-04   1st Qu.:6.431e-04   1st Qu.:4.866e-04  
-##  Median :2.627e-04   Median :8.782e-04   Median :6.769e-04  
-##  Mean   :2.830e-04   Mean   :9.088e-04   Mean   :7.027e-04  
-##  3rd Qu.:3.446e-04   3rd Qu.:1.132e-03   3rd Qu.:8.876e-04  
-##  Max.   :1.125e-03   Max.   :3.246e-03   Max.   :2.139e-03  
-##    PAR_SFMV19          PAR_SFMV20          PAR_SFMV21       
-##  Min.   :1.016e-05   Min.   :2.919e-06   Min.   :1.465e-07  
-##  1st Qu.:2.941e-04   1st Qu.:2.091e-04   1st Qu.:5.481e-04  
-##  Median :4.136e-04   Median :2.777e-04   Median :7.819e-04  
-##  Mean   :4.337e-04   Mean   :2.955e-04   Mean   :8.020e-04  
-##  3rd Qu.:5.459e-04   3rd Qu.:3.664e-04   3rd Qu.:1.034e-03  
-##  Max.   :1.456e-03   Max.   :1.053e-03   Max.   :2.932e-03  
-##    PAR_SFMV22          PAR_SFMV23          PAR_SFMV24       
-##  Min.   :1.240e-08   Min.   :3.600e-09   Min.   :1.710e-09  
-##  1st Qu.:5.090e-04   1st Qu.:3.586e-04   1st Qu.:1.443e-07  
-##  Median :7.191e-04   Median :6.948e-04   Median :5.744e-07  
-##  Mean   :7.215e-04   Mean   :6.892e-04   Mean   :2.929e-06  
-##  3rd Qu.:9.281e-04   3rd Qu.:9.921e-04   3rd Qu.:2.168e-06  
-##  Max.   :1.940e-03   Max.   :1.792e-03   Max.   :9.515e-05  
-##    PAR_SFM_MV          PAR_MFCC1         PAR_MFCC2          PAR_MFCC3        
-##  Min.   :0.0002265   Min.   :-2.6569   Min.   :-2.36990   Min.   :-1.617500  
-##  1st Qu.:0.0005787   1st Qu.: 0.7123   1st Qu.:-0.68853   1st Qu.:-0.009961  
-##  Median :0.0006406   Median : 1.2263   Median :-0.37579   Median : 0.198735  
-##  Mean   :0.0006485   Mean   : 1.3839   Mean   :-0.31482   Mean   : 0.173724  
-##  3rd Qu.:0.0007128   3rd Qu.: 2.0107   3rd Qu.: 0.03025   3rd Qu.: 0.380715  
-##  Max.   :0.0012263   Max.   : 4.7966   Max.   : 1.92230   Max.   : 1.545900  
-##    PAR_MFCC4          PAR_MFCC5            PAR_MFCC6          PAR_MFCC7       
-##  Min.   :-1.39070   Min.   :-1.1402000   Min.   :-1.56380   Min.   :-1.18160  
-##  1st Qu.:-0.31085   1st Qu.:-0.1406550   1st Qu.:-0.20190   1st Qu.:-0.16558  
-##  Median :-0.14624   Median : 0.0163940   Median :-0.08252   Median :-0.04753  
-##  Mean   :-0.12913   Mean   : 0.0008391   Mean   :-0.07631   Mean   :-0.06646  
-##  3rd Qu.: 0.04628   3rd Qu.: 0.1602900   3rd Qu.: 0.04538   3rd Qu.: 0.05755  
-##  Max.   : 1.18860   Max.   : 1.7158000   Max.   : 1.02730   Max.   : 0.85600  
-##    PAR_MFCC8          PAR_MFCC9          PAR_MFCC10         PAR_MFCC11      
-##  Min.   :-0.97552   Min.   :-0.80914   Min.   :-0.68398   Min.   :-0.80340  
-##  1st Qu.:-0.16879   1st Qu.:-0.11829   1st Qu.:-0.10572   1st Qu.:-0.08958  
-##  Median :-0.06366   Median :-0.02723   Median :-0.03484   Median :-0.02573  
-##  Mean   :-0.06096   Mean   :-0.03427   Mean   :-0.03354   Mean   :-0.02886  
-##  3rd Qu.: 0.04776   3rd Qu.: 0.05645   3rd Qu.: 0.03798   3rd Qu.: 0.03325  
-##  Max.   : 1.13310   Max.   : 0.76890   Max.   : 1.33660   Max.   : 1.61690  
-##    PAR_MFCC12         PAR_MFCC13          PAR_MFCC14          PAR_MFCC15       
-##  Min.   :-0.50829   Min.   :-0.448600   Min.   :-0.673420   Min.   :-0.771980  
-##  1st Qu.:-0.08393   1st Qu.:-0.045497   1st Qu.:-0.051500   1st Qu.:-0.032460  
-##  Median :-0.02699   Median : 0.001724   Median :-0.002377   Median : 0.009876  
-##  Mean   :-0.02400   Mean   : 0.000517   Mean   :-0.005954   Mean   : 0.011022  
-##  3rd Qu.: 0.03170   3rd Qu.: 0.048599   3rd Qu.: 0.044234   3rd Qu.: 0.056300  
-##  Max.   : 1.31500   Max.   : 0.475230   Max.   : 0.366970   Max.   : 0.918630  
-##    PAR_MFCC16          PAR_MFCC17         PAR_MFCC18         PAR_MFCC19      
-##  Min.   :-1.107600   Min.   :-0.49619   Min.   :-0.39429   Min.   :-0.49515  
-##  1st Qu.:-0.049165   1st Qu.:-0.08476   1st Qu.:-0.11500   1st Qu.:-0.11296  
-##  Median :-0.006781   Median :-0.04817   Median :-0.07727   Median :-0.08385  
-##  Mean   :-0.006691   Mean   :-0.04847   Mean   :-0.07824   Mean   :-0.08096  
-##  3rd Qu.: 0.034889   3rd Qu.:-0.01079   3rd Qu.:-0.04597   3rd Qu.:-0.05317  
-##  Max.   : 0.428940   Max.   : 0.71884   Max.   : 1.43400   Max.   : 2.01830  
-##    PAR_MFCC20         PAR_MFCCV1        PAR_MFCCV2         PAR_MFCCV3       
-##  Min.   :-0.37310   Min.   :-2.6569   Min.   :-2.36990   Min.   :-1.617500  
-##  1st Qu.:-0.09419   1st Qu.: 0.7123   1st Qu.:-0.68853   1st Qu.:-0.009961  
-##  Median :-0.06496   Median : 1.2263   Median :-0.37579   Median : 0.198735  
-##  Mean   :-0.06467   Mean   : 1.3839   Mean   :-0.31482   Mean   : 0.173724  
-##  3rd Qu.:-0.03683   3rd Qu.: 2.0107   3rd Qu.: 0.03025   3rd Qu.: 0.380715  
-##  Max.   : 1.97350   Max.   : 4.7966   Max.   : 1.92230   Max.   : 1.545900  
-##    PAR_MFCCV4         PAR_MFCCV5           PAR_MFCCV6         PAR_MFCCV7      
-##  Min.   :-1.39070   Min.   :-1.1402000   Min.   :-1.56380   Min.   :-1.18160  
-##  1st Qu.:-0.31085   1st Qu.:-0.1406550   1st Qu.:-0.20190   1st Qu.:-0.16558  
-##  Median :-0.14624   Median : 0.0163940   Median :-0.08252   Median :-0.04753  
-##  Mean   :-0.12913   Mean   : 0.0008391   Mean   :-0.07631   Mean   :-0.06646  
-##  3rd Qu.: 0.04628   3rd Qu.: 0.1602900   3rd Qu.: 0.04538   3rd Qu.: 0.05755  
-##  Max.   : 1.18860   Max.   : 1.7158000   Max.   : 1.02730   Max.   : 0.85600  
-##    PAR_MFCCV8         PAR_MFCCV9        PAR_MFCCV10        PAR_MFCCV11      
-##  Min.   :-0.97552   Min.   :-0.80914   Min.   :-0.68398   Min.   :-0.80340  
-##  1st Qu.:-0.16879   1st Qu.:-0.11829   1st Qu.:-0.10572   1st Qu.:-0.08958  
-##  Median :-0.06366   Median :-0.02723   Median :-0.03484   Median :-0.02573  
-##  Mean   :-0.06096   Mean   :-0.03427   Mean   :-0.03354   Mean   :-0.02886  
-##  3rd Qu.: 0.04776   3rd Qu.: 0.05645   3rd Qu.: 0.03798   3rd Qu.: 0.03325  
-##  Max.   : 1.13310   Max.   : 0.76890   Max.   : 1.33660   Max.   : 1.61690  
-##   PAR_MFCCV12        PAR_MFCCV13         PAR_MFCCV14         PAR_MFCCV15       
-##  Min.   :-0.50829   Min.   :-0.448600   Min.   :-0.673420   Min.   :-0.771980  
-##  1st Qu.:-0.08393   1st Qu.:-0.045497   1st Qu.:-0.051500   1st Qu.:-0.032460  
-##  Median :-0.02699   Median : 0.001724   Median :-0.002377   Median : 0.009876  
-##  Mean   :-0.02400   Mean   : 0.000517   Mean   :-0.005954   Mean   : 0.011022  
-##  3rd Qu.: 0.03170   3rd Qu.: 0.048599   3rd Qu.: 0.044234   3rd Qu.: 0.056300  
-##  Max.   : 1.31500   Max.   : 0.475230   Max.   : 0.366970   Max.   : 0.918630  
-##   PAR_MFCCV16         PAR_MFCCV17        PAR_MFCCV18        PAR_MFCCV19      
-##  Min.   :-1.107600   Min.   :-0.49619   Min.   :-0.39429   Min.   :-0.49515  
-##  1st Qu.:-0.049165   1st Qu.:-0.08476   1st Qu.:-0.11500   1st Qu.:-0.11296  
-##  Median :-0.006781   Median :-0.04817   Median :-0.07727   Median :-0.08385  
-##  Mean   :-0.006691   Mean   :-0.04847   Mean   :-0.07824   Mean   :-0.08096  
-##  3rd Qu.: 0.034889   3rd Qu.:-0.01079   3rd Qu.:-0.04597   3rd Qu.:-0.05317  
-##  Max.   : 0.428940   Max.   : 0.71884   Max.   : 1.43400   Max.   : 2.01830  
-##   PAR_MFCCV20       PAR_THR_1RMS_TOT  PAR_THR_2RMS_TOT    PAR_THR_3RMS_TOT  
-##  Min.   :-0.37310   Min.   :0.02113   Min.   :0.0002268   Min.   :0.000000  
-##  1st Qu.:-0.09419   1st Qu.:0.11735   1st Qu.:0.0254880   1st Qu.:0.003638  
-##  Median :-0.06496   Median :0.13116   Median :0.0278870   Median :0.005637  
-##  Mean   :-0.06467   Mean   :0.12807   Mean   :0.0280952   Mean   :0.006119  
-##  3rd Qu.:-0.03683   3rd Qu.:0.14230   3rd Qu.:0.0304040   3rd Qu.:0.008023  
-##  Max.   : 1.97350   Max.   :0.20224   Max.   :0.0606670   Max.   :0.023256  
-##  PAR_THR_1RMS_10FR_MEAN PAR_THR_1RMS_10FR_VAR PAR_THR_2RMS_10FR_MEAN
-##  Min.   :0.03655        Min.   :5.980e-06     Min.   :0.00000       
-##  1st Qu.:0.14118        1st Qu.:1.245e-04     1st Qu.:0.02250       
-##  Median :0.14980        Median :2.319e-04     Median :0.02463       
-##  Mean   :0.14882        Mean   :3.970e-04     Mean   :0.02464       
-##  3rd Qu.:0.15710        3rd Qu.:4.353e-04     3rd Qu.:0.02684       
-##  Max.   :0.39036        Max.   :1.020e-01     Max.   :0.06203       
-##  PAR_THR_2RMS_10FR_VAR PAR_THR_3RMS_10FR_MEAN PAR_THR_3RMS_10FR_VAR
-##  Min.   :0.000e+00     Min.   :0.000000       Min.   :0.000e+00    
-##  1st Qu.:1.924e-05     1st Qu.:0.001600       1st Qu.:2.090e-06    
-##  Median :3.364e-05     Median :0.002601       Median :5.147e-06    
-##  Mean   :4.705e-05     Mean   :0.003049       Mean   :8.571e-06    
-##  3rd Qu.:5.943e-05     3rd Qu.:0.003995       3rd Qu.:1.100e-05    
-##  Max.   :7.488e-04     Max.   :0.025948       Max.   :1.806e-04    
-##  PAR_PEAK_RMS_TOT PAR_PEAK_RMS10FR_MEAN PAR_PEAK_RMS10FR_VAR    PAR_ZCD        
-##  Min.   : 2.652   Min.   :   2.657      Min.   :      0      Min.   :0.003809  
-##  1st Qu.: 5.170   1st Qu.:   5.759      1st Qu.:      2      1st Qu.:0.026696  
-##  Median : 5.919   Median :   6.941      Median :      5      Median :0.035642  
-##  Mean   : 6.233   Mean   :  10.300      Mean   :   1830      Mean   :0.037813  
-##  3rd Qu.: 6.915   3rd Qu.:   9.319      3rd Qu.:     19      3rd Qu.:0.045441  
-##  Max.   :34.021   Max.   :1448.300      Max.   :5104600      Max.   :0.160760  
-##   PAR_1RMS_TCD       PAR_2RMS_TCD        PAR_3RMS_TCD      PAR_ZCD_10FR_MEAN 
-##  Min.   :0.001406   Min.   :0.0007619   Min.   :0.000000   Min.   :0.003657  
-##  1st Qu.:0.024789   1st Qu.:0.0073651   1st Qu.:0.001624   1st Qu.:0.026564  
-##  Median :0.034007   Median :0.0099864   Median :0.002367   Median :0.035439  
-##  Mean   :0.036096   Mean   :0.0107126   Mean   :0.002751   Mean   :0.037805  
-##  3rd Qu.:0.044038   3rd Qu.:0.0130790   3rd Qu.:0.003528   3rd Qu.:0.045400  
-##  Max.   :0.188070   Max.   :0.0428570   Max.   :0.017506   Max.   :0.161810  
-##  PAR_ZCD_10FR_VAR    PAR_1RMS_TCD_10FR_MEAN PAR_1RMS_TCD_10FR_VAR
-##  Min.   :5.400e-08   Min.   :0.00000        Min.   :0.0000000    
-##  1st Qu.:3.085e-05   1st Qu.:0.02441        1st Qu.:0.0001068    
-##  Median :6.840e-05   Median :0.03384        Median :0.0002175    
-##  Mean   :1.528e-04   Mean   :0.03609        Mean   :0.0003705    
-##  3rd Qu.:1.478e-04   3rd Qu.:0.04442        3rd Qu.:0.0004406    
-##  Max.   :1.145e-02   Max.   :0.17599        Max.   :0.0110250    
-##  PAR_2RMS_TCD_10FR_MEAN PAR_2RMS_TCD_10FR_VAR PAR_3RMS_TCD_10FR_MEAN
-##  Min.   :0.000000       Min.   :0.000e+00     Min.   :0.000000      
-##  1st Qu.:0.007097       1st Qu.:3.239e-05     1st Qu.:0.001480      
-##  Median :0.009845       Median :6.997e-05     Median :0.002242      
-##  Mean   :0.010563       Mean   :1.204e-04     Mean   :0.002640      
-##  3rd Qu.:0.013094       3rd Qu.:1.464e-04     3rd Qu.:0.003429      
-##  Max.   :0.042269       Max.   :3.539e-03     Max.   :0.018438      
-##  PAR_3RMS_TCD_10FR_VAR    GENRE          
-##  Min.   :0.000e+00     Length:4278       
-##  1st Qu.:3.118e-06     Class :character  
-##  Median :8.726e-06     Mode  :character  
-##  Mean   :2.212e-05                       
-##  3rd Qu.:2.300e-05                       
-##  Max.   :1.096e-03</code></pre>
-<pre class="r"><code>## A FAIRE : Analyse uni-bi variée
+#summary(data)
+
+
+## A FAIRE : Analyse uni-bi variée
 
 ##Question : Comment choisir les variables qu&#39;on observe ? 
 
@@ -822,12 +446,37 @@ summary(data[,0:20])</code></pre>
 ## 0.005926 0.162052 0.290915 0.425129 0.528360 3.506300</code></pre>
 <pre class="r"><code>## On remarque que les variables PAR_SC_V et PAR_SC ont des ordres de grandeurs bien supérieurs à celui des autres variables. Il est donc judicieux d&#39;appliquer une transformation log afin d&#39;obtenir des ordres de grandeurs similaires entre toutes nos variables explicatives
 
-
+data$PAR_SC_V&lt;-log(data$PAR_SC_V)
+data$PAR_SC&lt;-log(data$PAR_SC)
 
 ## Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s&#39;en séparer sans risquer de perdre des informations sur notre jeu de donnée.
 
+col_to_drop&lt;-c(148:167)
 
-## A FAIRE : Variable corrélée </code></pre>
+data&lt;-data[-col_to_drop]
+
+dim(data)</code></pre>
+<pre><code>## [1] 4278  172</code></pre>
+<pre class="r"><code>#summary(data)
+
+
+
+
+## A FAIRE : Variable corrélée 
+
+p&lt;-ncol(data)
+
+mcor&lt;-cor(data[,-p])
+
+cor_pos&lt;-which(mcor!=1 &amp; mcor&gt;=0.99,arr.ind=TRUE)
+cor_pos</code></pre>
+<pre><code>##                   row col
+## PAR_ASE34          37  36
+## PAR_ASE33          36  37
+## PAR_ASEV34         72  71
+## PAR_ASEV33         71  72
+## PAR_ZCD_10FR_MEAN 164 160
+## PAR_ZCD           160 164</code></pre>
 </div>
 <div id="echantillon-dapprentissage" class="section level2">
 <h2>Echantillon d’apprentissage</h2>
