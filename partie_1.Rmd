@@ -226,9 +226,12 @@ Mod2<-glm(formula = formula_Mod2,family=binomial,data=ndata[-p])
 
 
 ## ModAIC
+library(MASS)
+#step <- stepAIC(ModT)
 
-
-
+```
+```{r}
+step$anova
 ```
 
 
