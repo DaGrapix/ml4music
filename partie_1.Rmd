@@ -4,6 +4,7 @@ library(ggplot2)
 library(plyr)
 library(stats)
 library(tidyverse)
+library(cowplot)
 rm(list=ls())
 ```
 ## Analyse descriptive
@@ -48,34 +49,42 @@ prop_jazz
 
 
 
-```{r}
-#ggplot(data, aes(x=reorder(GENRE, GENRE, function(x)-(length(x)/n)))) +
-#geom_bar(fill='red') +  labs(x='Genre')
+
+```{r Distribution et transformation log,echo=FALSE}
+
+density_plot = function(X,xlab,lxlab){
+  density<-ggplot(data,aes(x=X))+geom_density(col="blue")+xlab(xlab)
+  log_density<-ggplot(data,aes(x=log(X)))+geom_density(col="red")+xlab(lxlab)
+  plot_grid(density,log_density,labels=c("Densité","Densité log"),label_size=12,ncol=1,label_x = 0, label_y = 0,hjust = -0.5, vjust = -0.5)
+}
+
+density_plot(data$PAR_SC,xlab="PAR_SC",lxlab="log(PAR_SC)")
+density_plot(data$PAR_SC_V,xlab="PAR_SC_V",lxlab="log(PAR_SC_V)")
+density_plot(data$PAR_ASC_V,xlab="PAR_ASC_V",lxlab="log(PAR_ASC_V)")
 
 
-summary(data[,0:20])
-summary(data$PAR_SC_V)
-summary(data$PAR_SC)
-summary(data$PAR_ASC_V)
 ```
 
-On remarque que les variables PAR_SC_V et PAR_SC ont des ordres de grandeurs bien supérieurs à celui des autres variables. Il est donc judicieux d'appliquer une transformation log afin d'obtenir des ordres de grandeurs similaires entre toutes nos variables explicatives.
+
+
+On remarque que les variables PAR_SC_V et PAR_ASC_V ont des distributions qui ne sont pas gaussiennes avant la transformation log au contraire des autres variables comme PAR_SC. C'est pourquoi, on leur applique une transformation log.
 
 Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre des informations sur notre jeu de donnée.
 
-```{r transformation log et doublons}
+```{r transformation doublons}
 rm(list=ls())
 data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
 
 data.old<-data
 
 data <- data.old[,-c(128:147)]
-data$PAR_SC <- log(data$PAR_SC)
-data$PAR_SC_V <- log(data$PAR_SC_V)
+data$PAR_SC_V<-log(data$PAR_SC_V)
+data$PAR_ASC_V<-log(data$PAR_ASC_V)
 
 n <- nrow(data)
 p <- ncol(data)
 ```
+
 
 ### Variables très corrélées
 ```{r}
