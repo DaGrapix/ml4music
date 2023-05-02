@@ -162,6 +162,9 @@ myplot(ndata$PAR_SFM_MV,ndata$y,"PAR_SFM_MV")
 Je pense que ce qu'il faut voir c'est que des fortes valeurs de PAR_ASE_M par exemple, la musique a plus de chance d'être Classique alors que pour des faibles valeurs de PAR_ASE_M, elle a plus de chance d'être du Jazz.
 De même, pour des grandes valeurs de PAR_ASE_MV,PAR_SFM_M, la musique aura plus de chance d'être du Jazz.
 
+Ce sont des valeurs qui jouent un rôle important dans la détermination de notre genre musical, ce sont des features importantes pour un modèle.
+
+
 ```{r}
 library(corrplot)
 var.data <- data[ , names(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV")]
@@ -185,25 +188,30 @@ On commence par créer nos différents modèles à l'aide de la fonction glm du 
 
 
 ```{r Définition des modèles,include=TRUE}
-
-
+1
+## Définition de Mod0
 
 Mod0<-glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV,family=binomial,data=ndata)
-
+summary(Mod0)
 
 ## Pour ModT, il faut enlever les variables fortement corrélées et peut être aussi les autres qui sont évoquées.
-## Je crois que les variables fortement corrélées ont déjà enlever, il faut donc voir ce qu'on fait des autres.
 
 ## Étape 1 : modifier ndata en fonction des variables que l'on enlève
 
 ## Étape 2 : Définir le modèle :
 
-ModT<-glm(y~.,family=binomial,data=ndata)
+
+## Définition de ModT
+ModT<-glm(y~.,family=binomial,data=ndata[,-p])
+summary(ModT)
+p_value<-coef(summary(ModT))[,4]
+var_Mod1<-which(p_value>0.05)
+
+?summary.glm
 
 ## Mod1 et Mod2 dépendent de ModT
 
 ## ModAIC
-
 
 
 
