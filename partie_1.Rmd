@@ -204,12 +204,26 @@ summary(Mod0)
 ## Définition de ModT
 ModT<-glm(y~.,family=binomial,data=ndata[,-p])
 summary(ModT)
-p_value<-coef(summary(ModT))[,4]
-var_Mod1<-which(p_value>0.05)
 
-?summary.glm
+## On récupère les p-value des variables
 
-## Mod1 et Mod2 dépendent de ModT
+p_value<-coef(summary(ModT))[-1,4]
+## On sélectionne celle qui ont un niveau de significativité de 5% et on crée la formule de notre modèle Mod1
+
+index_var_Mod1<-which(p_value>0.05)
+var_Mod1<-names(data[index_var_Mod1])
+formula_Mod1<-as.formula(paste("y ~",paste(var_Mod1, collapse= "+")))
+
+
+Mod1<-glm(formula = formula_Mod1,family=binomial,data=ndata[-p])
+
+
+index_var_Mod2<-which(p_value>0.2)
+var_Mod2<-names(data[index_var_Mod2])
+formula_Mod2<-as.formula(paste("y ~",paste(var_Mod2, collapse= "+")))
+
+Mod2<-glm(formula = formula_Mod2,family=binomial,data=ndata[-p])
+
 
 ## ModAIC
 

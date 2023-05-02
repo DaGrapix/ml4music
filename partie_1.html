@@ -788,12 +788,25 @@ ModT&lt;-glm(y~.,family=binomial,data=ndata[,-p])</code></pre>
 ## AIC: 1883.6
 ## 
 ## Number of Fisher Scoring iterations: 10</code></pre>
-<pre class="r"><code>p_value&lt;-coef(summary(ModT))[,4]
-var_Mod1&lt;-which(p_value&gt;0.05)
+<pre class="r"><code>## On récupère les p-value des variables
 
-?summary.glm</code></pre>
-<pre><code>## démarrage du serveur d&#39;aide httpd ... fini</code></pre>
-<pre class="r"><code>## Mod1 et Mod2 dépendent de ModT
+p_value&lt;-coef(summary(ModT))[-1,4]
+## On sélectionne celle qui ont un niveau de significativité de 5% et on crée la formule de notre modèle Mod1
+
+index_var_Mod1&lt;-which(p_value&gt;0.05)
+var_Mod1&lt;-names(data[index_var_Mod1])
+formula_Mod1&lt;-as.formula(paste(&quot;y ~&quot;,paste(var_Mod1, collapse= &quot;+&quot;)))
+
+
+Mod1&lt;-glm(formula = formula_Mod1,family=binomial,data=ndata[-p])</code></pre>
+<pre><code>## Warning: glm.fit: des probabilités ont été ajustées numériquement à 0 ou 1</code></pre>
+<pre class="r"><code>index_var_Mod2&lt;-which(p_value&gt;0.2)
+var_Mod2&lt;-names(data[index_var_Mod2])
+formula_Mod2&lt;-as.formula(paste(&quot;y ~&quot;,paste(var_Mod2, collapse= &quot;+&quot;)))
+
+Mod2&lt;-glm(formula = formula_Mod2,family=binomial,data=ndata[-p])
+
+## Mod1 et Mod2 dépendent de ModT
 
 ## ModAIC</code></pre>
 </div>
