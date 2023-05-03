@@ -5,6 +5,8 @@ library(plyr)
 library(stats)
 library(tidyverse)
 library(cowplot)
+library(ROCR)
+
 rm(list=ls())
 ```
 ## Analyse descriptive
@@ -188,7 +190,7 @@ On commence par créer nos différents modèles à l'aide de la fonction glm du 
 
 
 ```{r Définition des modèles,include=TRUE}
-1
+
 ## Définition de Mod0
 
 Mod0<-glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV,family=binomial,data=ndata)
@@ -231,11 +233,29 @@ library(MASS)
 
 ```
 ```{r}
-step$anova
+#step$anova
 ```
 
 
 ## Courbes ROC
+```{r Import des données de test}
+test_data<-read.csv("Music_test.txt",header=TRUE,sep=";")
+dim(test_data)
+```
+On remarque que les jeux de test à les mêmes défauts que le jeu d'apprentissage, on va donc lui faire subir les mêmes transformations.
 
+```{r Transformation jeu d'apprentissage}
+test_data <- test_data[,-c(128:147)]
+test_data$PAR_SC_V<-log(test_data$PAR_SC_V)
+test_data$PAR_ASC_V<-log(test_data$PAR_ASC_V)
+
+```
+```{r Courbe ROC,include=TRUE}
+
+predproba = predict(ModT,type="response") # ModT est le résultat de glm
+pred = prediction(predproba,ndata$y) # objet S4
+plot(performance(pred,"sens","fpr"),xlab="",col=2) # ROC
+legend("bottomright",legend="Apprentissage ModT",col="red")
+```
 
 ## Erreurs
