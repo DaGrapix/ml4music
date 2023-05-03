@@ -1,11 +1,105 @@
 
 ## Intérêt de la régression ridge
 
+La régression ridge est plus efficace que la régression linéaire ou logistique simple dans le cas de la grande dimmension (plus d'individus que de variables).
+Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées.
+
+```{r, include=FALSE}
+rm(list=ls())
+data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+n <- nrow(data)
+p <- ncol(data)
+```
+
+```{r}
+corr <- cor(x=data[,-p])
+
+#selection des indices de la matrice de correlation > 0.99
+high.corr.index.new <- which(corr > 0.75, arr.ind = TRUE) %>% unname
+high.corr.index.new
+```
+
 
 ## 
 
+```{r}
+library(glmnet)
+set.seed(103)
+```
 
-##
+
+
+
+
+```{r}
+x <- data[,-p] %>% as.matrix()
+y <- ifelse(data$GENRE=="Classical", 1, 0)
+
+#training and testing samples
+train=sample(c(TRUE,FALSE), n-1, rep=TRUE, prob=c(2/3,1/3))
+x.train <- x[which(train),]
+x.test <- x[which(train==FALSE),]
+
+y.train <- y[which(train)]
+y.test <- x[which(train==FALSE)]
+
+grid <- 10^seq(10, -2, length=100)
+
+ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=grid, family="binomial")
+coef.ridge = coef(ridge.fit)[-1,] # enlève le coefficient d'intercept qui n'apporte rien
+
+plot(coef(ridge.fit)[1,])
+plot(ridge.fit)
+```
+
+
+```{r}
+# Les différentes valeurs de lambda==grid
+ridge.fit$lambda
+```
+
+
+```{r}
+# Les coefficients de régression associés à chaque variable pour chacune des 100 valeurs de lambda
+ridge.fit$dim
+```
+
+## Cross-validation et choix du modèle
+
+```{r}
+set.seed(314)
+cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+bestlam=cv.out$lambda.min
+plot(cv.out)
+
+bestlam
+```
+On voit que la SSR minimum est atteinte pour $\lambda$=0.01 sur la frontière du domaine.
+Il serait judicieux de ré-effectuer la validation-croisée pour des nouvelles valeurs de $\lambda$.
+Le minimum sera sûrement atteint avant $10^0$.
+
+```{r}
+grid <- 10^seq(0, -5, length=100)
+
+cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+bestlam=cv.out$lambda.min
+plot(cv.out)
+
+bestlam
+```
+
+On obtient finalement le meilleur $\lambda$ : 0.008497534.
+
+```{r}
+bestlam = 0.008497534
+ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=bestlam, family="binomial")
+ridge.pred = predict(ridge.fit, s=bestlam, newx=x.test)
+mean((ridge.pred-y.test)^2)
+
+out = glmnet(x,y,alpha=0)
+predict(out,type="coefficients",s=bestlam)[1:11,]
+```
+
 
 
 ## Performance
