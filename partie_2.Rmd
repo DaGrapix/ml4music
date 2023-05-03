@@ -41,7 +41,7 @@ x.train <- x[which(train),]
 x.test <- x[which(train==FALSE),]
 
 y.train <- y[which(train)]
-y.test <- x[which(train==FALSE)]
+y.test <- y[which(train==FALSE)]
 
 grid <- 10^seq(10, -2, length=100)
 
