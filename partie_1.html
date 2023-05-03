@@ -806,12 +806,406 @@ formula_Mod2&lt;-as.formula(paste(&quot;y ~&quot;,paste(var_Mod2, collapse= &quo
 
 Mod2&lt;-glm(formula = formula_Mod2,family=binomial,data=ndata[-p])
 
-## Mod1 et Mod2 dépendent de ModT
 
-## ModAIC</code></pre>
+## ModAIC
+library(MASS)</code></pre>
+<pre><code>## 
+## Attachement du package : &#39;MASS&#39;</code></pre>
+<pre><code>## L&#39;objet suivant est masqué depuis &#39;package:dplyr&#39;:
+## 
+##     select</code></pre>
+<pre class="r"><code>#step &lt;- stepAIC(ModT)</code></pre>
+<pre class="r"><code>#step$anova</code></pre>
 </div>
 <div id="courbes-roc" class="section level2">
 <h2>Courbes ROC</h2>
+<pre class="r"><code>test_data&lt;-read.csv(&quot;Music_test.txt&quot;,header=TRUE,sep=&quot;;&quot;)
+dim(test_data)</code></pre>
+<pre><code>## [1] 2169  191</code></pre>
+<pre class="r"><code>summary(test_data)</code></pre>
+<pre><code>##      PAR_TC           PAR_SC           PAR_SC_V          PAR_ASE1      
+##  Min.   :0.8377   Min.   :  38.12   Min.   :    605   Min.   :-0.2127  
+##  1st Qu.:2.3288   1st Qu.: 450.15   1st Qu.:  22781   1st Qu.:-0.1724  
+##  Median :2.4954   Median : 598.95   Median :  46857   Median :-0.1575  
+##  Mean   :2.4809   Mean   : 629.09   Mean   : 100792   Mean   :-0.1562  
+##  3rd Qu.:2.6472   3rd Qu.: 760.83   3rd Qu.:  99839   3rd Qu.:-0.1411  
+##  Max.   :4.2044   Max.   :2813.00   Max.   :4098800   Max.   :-0.0533  
+##     PAR_ASE2           PAR_ASE3           PAR_ASE4           PAR_ASE5       
+##  Min.   :-0.21736   Min.   :-0.21816   Min.   :-0.21340   Min.   :-0.21810  
+##  1st Qu.:-0.17218   1st Qu.:-0.16660   1st Qu.:-0.15701   1st Qu.:-0.14995  
+##  Median :-0.15859   Median :-0.15034   Median :-0.13977   Median :-0.13271  
+##  Mean   :-0.15599   Mean   :-0.14948   Mean   :-0.14091   Mean   :-0.13530  
+##  3rd Qu.:-0.14014   3rd Qu.:-0.13165   3rd Qu.:-0.12393   3rd Qu.:-0.11883  
+##  Max.   :-0.06255   Max.   :-0.06528   Max.   :-0.06245   Max.   :-0.06305  
+##     PAR_ASE6           PAR_ASE7           PAR_ASE8           PAR_ASE9       
+##  Min.   :-0.21794   Min.   :-0.21538   Min.   :-0.21045   Min.   :-0.20872  
+##  1st Qu.:-0.14443   1st Qu.:-0.14102   1st Qu.:-0.13792   1st Qu.:-0.13584  
+##  Median :-0.12877   Median :-0.12848   Median :-0.12639   Median :-0.12461  
+##  Mean   :-0.13181   Mean   :-0.13050   Mean   :-0.12746   Mean   :-0.12499  
+##  3rd Qu.:-0.11700   3rd Qu.:-0.11728   3rd Qu.:-0.11461   3rd Qu.:-0.11324  
+##  Max.   :-0.07484   Max.   :-0.07436   Max.   :-0.07243   Max.   :-0.06468  
+##    PAR_ASE10          PAR_ASE11          PAR_ASE12          PAR_ASE13       
+##  Min.   :-0.19951   Min.   :-0.18509   Min.   :-0.17921   Min.   :-0.19821  
+##  1st Qu.:-0.13305   1st Qu.:-0.13131   1st Qu.:-0.13112   1st Qu.:-0.13254  
+##  Median :-0.12238   Median :-0.12099   Median :-0.12093   Median :-0.12162  
+##  Mean   :-0.12192   Mean   :-0.12080   Mean   :-0.12060   Mean   :-0.12206  
+##  3rd Qu.:-0.11039   3rd Qu.:-0.10991   3rd Qu.:-0.11015   3rd Qu.:-0.11048  
+##  Max.   :-0.05956   Max.   :-0.06376   Max.   :-0.06388   Max.   :-0.07259  
+##    PAR_ASE14         PAR_ASE15          PAR_ASE16          PAR_ASE17       
+##  Min.   :-0.1744   Min.   :-0.18507   Min.   :-0.18979   Min.   :-0.19224  
+##  1st Qu.:-0.1335   1st Qu.:-0.13734   1st Qu.:-0.14206   1st Qu.:-0.14430  
+##  Median :-0.1211   Median :-0.12664   Median :-0.13209   Median :-0.13430  
+##  Mean   :-0.1220   Mean   :-0.12728   Mean   :-0.13266   Mean   :-0.13528  
+##  3rd Qu.:-0.1100   3rd Qu.:-0.11728   3rd Qu.:-0.12232   3rd Qu.:-0.12537  
+##  Max.   :-0.0605   Max.   :-0.06344   Max.   :-0.07998   Max.   :-0.06967  
+##    PAR_ASE18          PAR_ASE19         PAR_ASE20          PAR_ASE21       
+##  Min.   :-0.19476   Min.   :-0.1988   Min.   :-0.20120   Min.   :-0.20640  
+##  1st Qu.:-0.14897   1st Qu.:-0.1516   1st Qu.:-0.15680   1st Qu.:-0.16122  
+##  Median :-0.13824   Median :-0.1415   Median :-0.14650   Median :-0.14983  
+##  Mean   :-0.13901   Mean   :-0.1423   Mean   :-0.14725   Mean   :-0.15135  
+##  3rd Qu.:-0.12894   3rd Qu.:-0.1325   3rd Qu.:-0.13688   3rd Qu.:-0.14066  
+##  Max.   :-0.07706   Max.   :-0.0784   Max.   :-0.08859   Max.   :-0.08137  
+##    PAR_ASE22         PAR_ASE23         PAR_ASE24         PAR_ASE25      
+##  Min.   :-0.2077   Min.   :-0.2137   Min.   :-0.2187   Min.   :-0.2264  
+##  1st Qu.:-0.1690   1st Qu.:-0.1736   1st Qu.:-0.1793   1st Qu.:-0.1862  
+##  Median :-0.1544   Median :-0.1599   Median :-0.1673   Median :-0.1742  
+##  Mean   :-0.1566   Mean   :-0.1618   Mean   :-0.1683   Mean   :-0.1756  
+##  3rd Qu.:-0.1444   3rd Qu.:-0.1500   3rd Qu.:-0.1570   3rd Qu.:-0.1645  
+##  Max.   :-0.1050   Max.   :-0.1092   Max.   :-0.1226   Max.   :-0.1221  
+##    PAR_ASE26         PAR_ASE27         PAR_ASE28         PAR_ASE29      
+##  Min.   :-0.2355   Min.   :-0.2399   Min.   :-0.2448   Min.   :-0.2507  
+##  1st Qu.:-0.1946   1st Qu.:-0.2042   1st Qu.:-0.2119   1st Qu.:-0.2202  
+##  Median :-0.1847   Median :-0.1945   Median :-0.2015   Median :-0.2094  
+##  Mean   :-0.1850   Mean   :-0.1941   Mean   :-0.2012   Mean   :-0.2089  
+##  3rd Qu.:-0.1751   3rd Qu.:-0.1838   3rd Qu.:-0.1905   3rd Qu.:-0.1985  
+##  Max.   :-0.1272   Max.   :-0.1141   Max.   :-0.1322   Max.   :-0.1490  
+##    PAR_ASE30         PAR_ASE31         PAR_ASE32         PAR_ASE33      
+##  Min.   :-0.2610   Min.   :-0.2838   Min.   :-0.3015   Min.   :-0.3461  
+##  1st Qu.:-0.2296   1st Qu.:-0.2392   1st Qu.:-0.2562   1st Qu.:-0.3073  
+##  Median :-0.2173   Median :-0.2257   Median :-0.2429   Median :-0.2924  
+##  Mean   :-0.2169   Mean   :-0.2255   Mean   :-0.2415   Mean   :-0.2912  
+##  3rd Qu.:-0.2048   3rd Qu.:-0.2120   3rd Qu.:-0.2277   3rd Qu.:-0.2760  
+##  Max.   :-0.1553   Max.   :-0.1689   Max.   :-0.1629   Max.   :-0.2125  
+##    PAR_ASE34         PAR_ASE_M         PAR_ASEV1           PAR_ASEV2        
+##  Min.   :-0.3446   Min.   :-0.1688   Min.   :7.347e-05   Min.   :7.641e-05  
+##  1st Qu.:-0.3044   1st Qu.:-0.1641   1st Qu.:2.349e-04   1st Qu.:3.467e-04  
+##  Median :-0.2896   Median :-0.1633   Median :3.254e-04   Median :4.366e-04  
+##  Mean   :-0.2883   Mean   :-0.1632   Mean   :3.921e-04   Mean   :5.244e-04  
+##  3rd Qu.:-0.2731   3rd Qu.:-0.1624   3rd Qu.:4.774e-04   3rd Qu.:6.123e-04  
+##  Max.   :-0.2072   Max.   :-0.1583   Max.   :2.201e-03   Max.   :2.692e-03  
+##    PAR_ASEV3           PAR_ASEV4           PAR_ASEV5        
+##  Min.   :5.638e-05   Min.   :5.087e-05   Min.   :6.522e-05  
+##  1st Qu.:2.810e-04   1st Qu.:2.606e-04   1st Qu.:2.677e-04  
+##  Median :3.945e-04   Median :3.596e-04   Median :3.699e-04  
+##  Mean   :4.670e-04   Mean   :4.321e-04   Mean   :4.410e-04  
+##  3rd Qu.:5.655e-04   3rd Qu.:5.268e-04   3rd Qu.:5.461e-04  
+##  Max.   :2.082e-03   Max.   :2.018e-03   Max.   :2.291e-03  
+##    PAR_ASEV6           PAR_ASEV7           PAR_ASEV8        
+##  Min.   :6.864e-05   Min.   :7.818e-05   Min.   :5.671e-05  
+##  1st Qu.:2.777e-04   1st Qu.:2.691e-04   1st Qu.:2.459e-04  
+##  Median :3.840e-04   Median :3.826e-04   Median :3.469e-04  
+##  Mean   :4.504e-04   Mean   :4.441e-04   Mean   :4.021e-04  
+##  3rd Qu.:5.458e-04   3rd Qu.:5.372e-04   3rd Qu.:4.914e-04  
+##  Max.   :2.153e-03   Max.   :2.456e-03   Max.   :2.004e-03  
+##    PAR_ASEV9           PAR_ASEV10          PAR_ASEV11       
+##  Min.   :3.893e-05   Min.   :0.0000381   Min.   :4.172e-05  
+##  1st Qu.:2.660e-04   1st Qu.:0.0002713   1st Qu.:2.595e-04  
+##  Median :3.615e-04   Median :0.0003558   Median :3.496e-04  
+##  Mean   :4.151e-04   Mean   :0.0004144   Mean   :4.179e-04  
+##  3rd Qu.:4.986e-04   3rd Qu.:0.0004805   3rd Qu.:4.912e-04  
+##  Max.   :1.717e-03   Max.   :0.0024664   Max.   :2.385e-03  
+##    PAR_ASEV12          PAR_ASEV13          PAR_ASEV14       
+##  Min.   :5.534e-05   Min.   :6.074e-05   Min.   :6.251e-05  
+##  1st Qu.:2.521e-04   1st Qu.:2.917e-04   1st Qu.:2.766e-04  
+##  Median :3.481e-04   Median :4.038e-04   Median :3.922e-04  
+##  Mean   :4.046e-04   Mean   :4.611e-04   Mean   :4.386e-04  
+##  3rd Qu.:4.812e-04   3rd Qu.:5.544e-04   3rd Qu.:5.363e-04  
+##  Max.   :2.940e-03   Max.   :2.488e-03   Max.   :1.908e-03  
+##    PAR_ASEV15          PAR_ASEV16          PAR_ASEV17       
+##  Min.   :0.0000474   Min.   :2.566e-05   Min.   :4.056e-05  
+##  1st Qu.:0.0002709   1st Qu.:2.575e-04   1st Qu.:2.642e-04  
+##  Median :0.0003781   Median :3.656e-04   Median :3.704e-04  
+##  Mean   :0.0004480   Mean   :4.227e-04   Mean   :4.306e-04  
+##  3rd Qu.:0.0005611   3rd Qu.:5.198e-04   3rd Qu.:5.410e-04  
+##  Max.   :0.0032983   Max.   :2.319e-03   Max.   :1.847e-03  
+##    PAR_ASEV18          PAR_ASEV19          PAR_ASEV20       
+##  Min.   :0.0000364   Min.   :2.859e-05   Min.   :2.614e-05  
+##  1st Qu.:0.0002574   1st Qu.:2.542e-04   1st Qu.:2.406e-04  
+##  Median :0.0003783   Median :3.556e-04   Median :3.427e-04  
+##  Mean   :0.0004346   Mean   :4.107e-04   Mean   :3.991e-04  
+##  3rd Qu.:0.0005441   3rd Qu.:5.170e-04   3rd Qu.:5.018e-04  
+##  Max.   :0.0020592   Max.   :1.744e-03   Max.   :1.792e-03  
+##    PAR_ASEV21          PAR_ASEV22          PAR_ASEV23       
+##  Min.   :1.954e-05   Min.   :0.0000209   Min.   :1.909e-05  
+##  1st Qu.:2.156e-04   1st Qu.:0.0002066   1st Qu.:1.947e-04  
+##  Median :2.933e-04   Median :0.0002817   Median :2.695e-04  
+##  Mean   :3.476e-04   Mean   :0.0003328   Mean   :3.143e-04  
+##  3rd Qu.:4.202e-04   3rd Qu.:0.0004036   3rd Qu.:3.840e-04  
+##  Max.   :1.561e-03   Max.   :0.0019016   Max.   :1.658e-03  
+##    PAR_ASEV24          PAR_ASEV25          PAR_ASEV26       
+##  Min.   :1.968e-05   Min.   :0.0000178   Min.   :1.758e-05  
+##  1st Qu.:1.806e-04   1st Qu.:0.0001621   1st Qu.:1.552e-04  
+##  Median :2.482e-04   Median :0.0002261   Median :2.137e-04  
+##  Mean   :2.876e-04   Mean   :0.0002600   Mean   :2.414e-04  
+##  3rd Qu.:3.462e-04   3rd Qu.:0.0003169   3rd Qu.:2.977e-04  
+##  Max.   :1.875e-03   Max.   :0.0018738   Max.   :1.338e-03  
+##    PAR_ASEV27          PAR_ASEV28          PAR_ASEV29       
+##  Min.   :1.555e-05   Min.   :1.387e-05   Min.   :1.253e-05  
+##  1st Qu.:1.444e-04   1st Qu.:1.402e-04   1st Qu.:1.428e-04  
+##  Median :1.977e-04   Median :1.982e-04   Median :2.002e-04  
+##  Mean   :2.248e-04   Mean   :2.227e-04   Mean   :2.256e-04  
+##  3rd Qu.:2.722e-04   3rd Qu.:2.685e-04   3rd Qu.:2.792e-04  
+##  Max.   :1.944e-03   Max.   :1.403e-03   Max.   :1.068e-03  
+##    PAR_ASEV30          PAR_ASEV31          PAR_ASEV32       
+##  Min.   :1.193e-05   Min.   :0.0000119   Min.   :1.577e-05  
+##  1st Qu.:1.615e-04   1st Qu.:0.0002112   1st Qu.:3.132e-04  
+##  Median :2.218e-04   Median :0.0002957   Median :4.379e-04  
+##  Mean   :2.503e-04   Mean   :0.0003338   Mean   :4.843e-04  
+##  3rd Qu.:3.025e-04   3rd Qu.:0.0004179   3rd Qu.:6.054e-04  
+##  Max.   :1.546e-03   Max.   :0.0016303   Max.   :2.292e-03  
+##    PAR_ASEV33          PAR_ASEV34          PAR_ASE_MV           PAR_ASC       
+##  Min.   :6.645e-06   Min.   :5.994e-06   Min.   :6.486e-05   Min.   :-4.8190  
+##  1st Qu.:2.687e-04   1st Qu.:2.665e-04   1st Qu.:3.053e-04   1st Qu.:-1.7960  
+##  Median :3.598e-04   Median :3.625e-04   Median :3.660e-04   Median :-1.3233  
+##  Mean   :3.965e-04   Mean   :3.990e-04   Mean   :3.815e-04   Mean   :-1.4015  
+##  3rd Qu.:4.722e-04   3rd Qu.:4.799e-04   3rd Qu.:4.426e-04   3rd Qu.:-0.9554  
+##  Max.   :3.111e-03   Max.   :3.115e-03   Max.   :9.811e-04   Max.   : 0.7545  
+##    PAR_ASC_V          PAR_ASS         PAR_ASS_V           PAR_SFM1      
+##  Min.   :0.00675   Min.   :0.3490   Min.   :0.003518   Min.   :0.01547  
+##  1st Qu.:0.16941   1st Qu.:0.8576   1st Qu.:0.047990   1st Qu.:0.15256  
+##  Median :0.29671   Median :1.0536   Median :0.073724   Median :0.16724  
+##  Mean   :0.42852   Mean   :1.0587   Mean   :0.090954   Mean   :0.16258  
+##  3rd Qu.:0.54294   3rd Qu.:1.2393   3rd Qu.:0.114570   3rd Qu.:0.17758  
+##  Max.   :4.99800   Max.   :2.0524   Max.   :0.738050   Max.   :0.21112  
+##     PAR_SFM2            PAR_SFM3          PAR_SFM4          PAR_SFM5       
+##  Min.   :0.0007556   Min.   :0.01261   Min.   :0.01255   Min.   :0.006327  
+##  1st Qu.:0.0044019   1st Qu.:0.07656   1st Qu.:0.07322   1st Qu.:0.045748  
+##  Median :0.0049438   Median :0.08751   Median :0.08384   Median :0.053851  
+##  Mean   :0.0048022   Mean   :0.08518   Mean   :0.08243   Mean   :0.053032  
+##  3rd Qu.:0.0053520   3rd Qu.:0.09639   3rd Qu.:0.09388   3rd Qu.:0.061230  
+##  Max.   :0.0063948   Max.   :0.12281   Max.   :0.11771   Max.   :0.087032  
+##     PAR_SFM6           PAR_SFM7           PAR_SFM8          PAR_SFM9       
+##  Min.   :0.003899   Min.   :0.003905   Min.   :0.00340   Min.   :0.002344  
+##  1st Qu.:0.036937   1st Qu.:0.027795   1st Qu.:0.02076   1st Qu.:0.037672  
+##  Median :0.044812   Median :0.032974   Median :0.02546   Median :0.047257  
+##  Mean   :0.043932   Mean   :0.032964   Mean   :0.02563   Mean   :0.047513  
+##  3rd Qu.:0.051501   3rd Qu.:0.038561   3rd Qu.:0.03019   3rd Qu.:0.056161  
+##  Max.   :0.075057   Max.   :0.058266   Max.   :0.04834   Max.   :0.101020  
+##    PAR_SFM10          PAR_SFM11          PAR_SFM12          PAR_SFM13      
+##  Min.   :0.005203   Min.   :0.004919   Min.   :0.001977   Min.   :0.01579  
+##  1st Qu.:0.031584   1st Qu.:0.024115   1st Qu.:0.020474   1st Qu.:0.05273  
+##  Median :0.039344   Median :0.030746   Median :0.026026   Median :0.06529  
+##  Mean   :0.040144   Mean   :0.031317   Mean   :0.026617   Mean   :0.06574  
+##  3rd Qu.:0.048272   3rd Qu.:0.037628   3rd Qu.:0.031833   3rd Qu.:0.07801  
+##  Max.   :0.092338   Max.   :0.075796   Max.   :0.064229   Max.   :0.13017  
+##    PAR_SFM14          PAR_SFM15          PAR_SFM16          PAR_SFM17      
+##  Min.   :0.006217   Min.   :0.008814   Min.   :0.006377   Min.   :0.01174  
+##  1st Qu.:0.038057   1st Qu.:0.034657   1st Qu.:0.028637   1st Qu.:0.06902  
+##  Median :0.048634   Median :0.044185   Median :0.036569   Median :0.08562  
+##  Mean   :0.049373   Mean   :0.044962   Mean   :0.037241   Mean   :0.08389  
+##  3rd Qu.:0.059931   3rd Qu.:0.054592   3rd Qu.:0.045407   3rd Qu.:0.10006  
+##  Max.   :0.099499   Max.   :0.089815   Max.   :0.075870   Max.   :0.13546  
+##    PAR_SFM18         PAR_SFM19         PAR_SFM20          PAR_SFM21      
+##  Min.   :0.01373   Min.   :0.01054   Min.   :0.008788   Min.   :0.01635  
+##  1st Qu.:0.06173   1st Qu.:0.04966   1st Qu.:0.040438   1st Qu.:0.08872  
+##  Median :0.07565   Median :0.06064   Median :0.049234   Median :0.10130  
+##  Mean   :0.07466   Mean   :0.05964   Mean   :0.048844   Mean   :0.10055  
+##  3rd Qu.:0.08888   3rd Qu.:0.07107   3rd Qu.:0.057670   3rd Qu.:0.11282  
+##  Max.   :0.12138   Max.   :0.09633   Max.   :0.080230   Max.   :0.14120  
+##    PAR_SFM22         PAR_SFM23          PAR_SFM24         PAR_SFM_M      
+##  Min.   :0.02201   Min.   :0.002467   Min.   :0.07216   Min.   :0.02782  
+##  1st Qu.:0.07587   1st Qu.:0.020707   1st Qu.:0.08241   1st Qu.:0.05340  
+##  Median :0.08540   Median :0.038706   Median :0.08269   Median :0.05923  
+##  Mean   :0.08558   Mean   :0.042457   Mean   :0.08244   Mean   :0.05881  
+##  3rd Qu.:0.09555   3rd Qu.:0.062036   3rd Qu.:0.08281   3rd Qu.:0.06438  
+##  Max.   :0.12397   Max.   :0.099281   Max.   :0.08291   Max.   :0.08825  
+##    PAR_SFMV1           PAR_SFMV2           PAR_SFMV3        
+##  Min.   :0.0002272   Min.   :2.735e-07   Min.   :0.0001547  
+##  1st Qu.:0.0023682   1st Qu.:2.692e-06   1st Qu.:0.0010731  
+##  Median :0.0028427   Median :3.175e-06   Median :0.0012633  
+##  Mean   :0.0029506   Mean   :3.284e-06   Mean   :0.0013040  
+##  3rd Qu.:0.0034248   3rd Qu.:3.799e-06   3rd Qu.:0.0015014  
+##  Max.   :0.0066215   Max.   :7.640e-06   Max.   :0.0031640  
+##    PAR_SFMV4           PAR_SFMV5           PAR_SFMV6        
+##  Min.   :0.0001561   Min.   :4.028e-05   Min.   :1.339e-05  
+##  1st Qu.:0.0011172   1st Qu.:5.552e-04   1st Qu.:4.169e-04  
+##  Median :0.0013149   Median :6.593e-04   Median :4.894e-04  
+##  Mean   :0.0013380   Mean   :6.668e-04   Mean   :5.010e-04  
+##  3rd Qu.:0.0015179   3rd Qu.:7.720e-04   3rd Qu.:5.795e-04  
+##  Max.   :0.0030282   Max.   :1.529e-03   Max.   :1.089e-03  
+##    PAR_SFMV7           PAR_SFMV8           PAR_SFMV9        
+##  Min.   :2.498e-05   Min.   :6.412e-06   Min.   :1.012e-05  
+##  1st Qu.:2.479e-04   1st Qu.:1.586e-04   1st Qu.:4.952e-04  
+##  Median :2.925e-04   Median :1.915e-04   Median :6.080e-04  
+##  Mean   :3.027e-04   Mean   :1.979e-04   Mean   :6.334e-04  
+##  3rd Qu.:3.539e-04   3rd Qu.:2.315e-04   3rd Qu.:7.495e-04  
+##  Max.   :7.189e-04   Max.   :5.133e-04   Max.   :1.555e-03  
+##    PAR_SFMV10          PAR_SFMV11          PAR_SFMV12       
+##  Min.   :3.118e-05   Min.   :1.748e-05   Min.   :7.171e-06  
+##  1st Qu.:3.589e-04   1st Qu.:2.199e-04   1st Qu.:1.471e-04  
+##  Median :4.484e-04   Median :2.812e-04   Median :1.867e-04  
+##  Mean   :4.675e-04   Mean   :2.950e-04   Mean   :1.992e-04  
+##  3rd Qu.:5.556e-04   3rd Qu.:3.555e-04   3rd Qu.:2.374e-04  
+##  Max.   :1.220e-03   Max.   :8.043e-04   Max.   :7.484e-04  
+##    PAR_SFMV13          PAR_SFMV14          PAR_SFMV15       
+##  Min.   :0.0001500   Min.   :5.992e-05   Min.   :5.863e-05  
+##  1st Qu.:0.0006916   1st Qu.:3.686e-04   1st Qu.:2.962e-04  
+##  Median :0.0008587   Median :4.757e-04   Median :3.853e-04  
+##  Mean   :0.0008997   Mean   :5.064e-04   Mean   :4.137e-04  
+##  3rd Qu.:0.0010733   3rd Qu.:6.161e-04   3rd Qu.:5.018e-04  
+##  Max.   :0.0027171   Max.   :1.323e-03   Max.   :1.438e-03  
+##    PAR_SFMV16          PAR_SFMV17          PAR_SFMV18       
+##  Min.   :3.331e-05   Min.   :5.777e-05   Min.   :3.251e-05  
+##  1st Qu.:1.980e-04   1st Qu.:6.468e-04   1st Qu.:4.904e-04  
+##  Median :2.583e-04   Median :8.653e-04   Median :6.839e-04  
+##  Mean   :2.809e-04   Mean   :9.019e-04   Mean   :6.978e-04  
+##  3rd Qu.:3.445e-04   3rd Qu.:1.123e-03   3rd Qu.:8.772e-04  
+##  Max.   :1.066e-03   Max.   :3.166e-03   Max.   :2.234e-03  
+##    PAR_SFMV19          PAR_SFMV20          PAR_SFMV21       
+##  Min.   :0.0000215   Min.   :0.0000130   Min.   :3.258e-06  
+##  1st Qu.:0.0002939   1st Qu.:0.0002090   1st Qu.:5.417e-04  
+##  Median :0.0004114   Median :0.0002818   Median :7.911e-04  
+##  Mean   :0.0004327   Mean   :0.0002981   Mean   :8.109e-04  
+##  3rd Qu.:0.0005521   3rd Qu.:0.0003716   3rd Qu.:1.053e-03  
+##  Max.   :0.0013352   Max.   :0.0009144   Max.   :2.822e-03  
+##    PAR_SFMV22          PAR_SFMV23          PAR_SFMV24       
+##  Min.   :1.167e-07   Min.   :2.400e-09   Min.   :1.830e-09  
+##  1st Qu.:4.930e-04   1st Qu.:3.420e-04   1st Qu.:1.496e-07  
+##  Median :7.160e-04   Median :6.801e-04   Median :5.709e-07  
+##  Mean   :7.162e-04   Mean   :6.833e-04   Mean   :3.015e-06  
+##  3rd Qu.:9.310e-04   3rd Qu.:9.928e-04   3rd Qu.:2.206e-06  
+##  Max.   :2.104e-03   Max.   :1.736e-03   Max.   :1.747e-04  
+##    PAR_SFM_MV          PAR_MFCC1        PAR_MFCC2          PAR_MFCC3       
+##  Min.   :0.0002265   Min.   :-1.643   Min.   :-2.30510   Min.   :-1.18100  
+##  1st Qu.:0.0005785   1st Qu.: 0.700   1st Qu.:-0.70862   1st Qu.:-0.01243  
+##  Median :0.0006406   Median : 1.236   Median :-0.39320   Median : 0.21335  
+##  Mean   :0.0006460   Mean   : 1.396   Mean   :-0.32118   Mean   : 0.18893  
+##  3rd Qu.:0.0007092   3rd Qu.: 2.007   3rd Qu.: 0.01147   3rd Qu.: 0.39254  
+##  Max.   :0.0012166   Max.   : 4.780   Max.   : 2.16530   Max.   : 1.49430  
+##    PAR_MFCC4          PAR_MFCC5          PAR_MFCC6          PAR_MFCC7       
+##  Min.   :-1.43750   Min.   :-1.19100   Min.   :-1.08460   Min.   :-1.07130  
+##  1st Qu.:-0.30538   1st Qu.:-0.12036   1st Qu.:-0.19637   1st Qu.:-0.15950  
+##  Median :-0.15249   Median : 0.02456   Median :-0.08091   Median :-0.04602  
+##  Mean   :-0.12790   Mean   : 0.01239   Mean   :-0.07022   Mean   :-0.06572  
+##  3rd Qu.: 0.04138   3rd Qu.: 0.16297   3rd Qu.: 0.04666   3rd Qu.: 0.05009  
+##  Max.   : 0.89508   Max.   : 1.04820   Max.   : 1.38210   Max.   : 0.74784  
+##    PAR_MFCC8          PAR_MFCC9          PAR_MFCC10         PAR_MFCC11      
+##  Min.   :-0.75079   Min.   :-0.69174   Min.   :-0.64661   Min.   :-0.46867  
+##  1st Qu.:-0.17341   1st Qu.:-0.12143   1st Qu.:-0.10561   1st Qu.:-0.08667  
+##  Median :-0.06861   Median :-0.03065   Median :-0.02880   Median :-0.02206  
+##  Mean   :-0.06175   Mean   :-0.03892   Mean   :-0.03267   Mean   :-0.02353  
+##  3rd Qu.: 0.04481   3rd Qu.: 0.05460   3rd Qu.: 0.03965   3rd Qu.: 0.03824  
+##  Max.   : 0.86990   Max.   : 1.01680   Max.   : 1.33660   Max.   : 1.61690  
+##    PAR_MFCC12         PAR_MFCC13          PAR_MFCC14           PAR_MFCC15      
+##  Min.   :-0.52460   Min.   :-0.504440   Min.   :-0.5054600   Min.   :-0.77198  
+##  1st Qu.:-0.08255   1st Qu.:-0.051426   1st Qu.:-0.0495090   1st Qu.:-0.02831  
+##  Median :-0.02884   Median :-0.002021   Median :-0.0004614   Median : 0.01243  
+##  Mean   :-0.02744   Mean   :-0.004372   Mean   :-0.0029263   Mean   : 0.01203  
+##  3rd Qu.: 0.02426   3rd Qu.: 0.044671   3rd Qu.: 0.0469540   3rd Qu.: 0.05410  
+##  Max.   : 1.31500   Max.   : 0.475230   Max.   : 0.4210700   Max.   : 0.66593  
+##    PAR_MFCC16          PAR_MFCC17         PAR_MFCC18         PAR_MFCC19      
+##  Min.   :-0.411860   Min.   :-0.37246   Min.   :-0.43575   Min.   :-0.36608  
+##  1st Qu.:-0.046750   1st Qu.:-0.08672   1st Qu.:-0.11227   1st Qu.:-0.10933  
+##  Median :-0.008052   Median :-0.04856   Median :-0.07955   Median :-0.08109  
+##  Mean   :-0.008546   Mean   :-0.04974   Mean   :-0.07889   Mean   :-0.07787  
+##  3rd Qu.: 0.032730   3rd Qu.:-0.01405   3rd Qu.:-0.04865   3rd Qu.:-0.05391  
+##  Max.   : 0.272170   Max.   : 0.48695   Max.   : 1.43400   Max.   : 2.01830  
+##    PAR_MFCC20         PAR_MFCCV1       PAR_MFCCV2         PAR_MFCCV3      
+##  Min.   :-0.38755   Min.   :-1.643   Min.   :-2.30510   Min.   :-1.18100  
+##  1st Qu.:-0.09561   1st Qu.: 0.700   1st Qu.:-0.70862   1st Qu.:-0.01243  
+##  Median :-0.06726   Median : 1.236   Median :-0.39320   Median : 0.21335  
+##  Mean   :-0.06825   Mean   : 1.396   Mean   :-0.32118   Mean   : 0.18893  
+##  3rd Qu.:-0.04064   3rd Qu.: 2.007   3rd Qu.: 0.01147   3rd Qu.: 0.39254  
+##  Max.   : 1.97350   Max.   : 4.780   Max.   : 2.16530   Max.   : 1.49430  
+##    PAR_MFCCV4         PAR_MFCCV5         PAR_MFCCV6         PAR_MFCCV7      
+##  Min.   :-1.43750   Min.   :-1.19100   Min.   :-1.08460   Min.   :-1.07130  
+##  1st Qu.:-0.30538   1st Qu.:-0.12036   1st Qu.:-0.19637   1st Qu.:-0.15950  
+##  Median :-0.15249   Median : 0.02456   Median :-0.08091   Median :-0.04602  
+##  Mean   :-0.12790   Mean   : 0.01239   Mean   :-0.07022   Mean   :-0.06572  
+##  3rd Qu.: 0.04138   3rd Qu.: 0.16297   3rd Qu.: 0.04666   3rd Qu.: 0.05009  
+##  Max.   : 0.89508   Max.   : 1.04820   Max.   : 1.38210   Max.   : 0.74784  
+##    PAR_MFCCV8         PAR_MFCCV9        PAR_MFCCV10        PAR_MFCCV11      
+##  Min.   :-0.75079   Min.   :-0.69174   Min.   :-0.64661   Min.   :-0.46867  
+##  1st Qu.:-0.17341   1st Qu.:-0.12143   1st Qu.:-0.10561   1st Qu.:-0.08667  
+##  Median :-0.06861   Median :-0.03065   Median :-0.02880   Median :-0.02206  
+##  Mean   :-0.06175   Mean   :-0.03892   Mean   :-0.03267   Mean   :-0.02353  
+##  3rd Qu.: 0.04481   3rd Qu.: 0.05460   3rd Qu.: 0.03965   3rd Qu.: 0.03824  
+##  Max.   : 0.86990   Max.   : 1.01680   Max.   : 1.33660   Max.   : 1.61690  
+##   PAR_MFCCV12        PAR_MFCCV13         PAR_MFCCV14          PAR_MFCCV15      
+##  Min.   :-0.52460   Min.   :-0.504440   Min.   :-0.5054600   Min.   :-0.77198  
+##  1st Qu.:-0.08255   1st Qu.:-0.051426   1st Qu.:-0.0495090   1st Qu.:-0.02831  
+##  Median :-0.02884   Median :-0.002021   Median :-0.0004614   Median : 0.01243  
+##  Mean   :-0.02744   Mean   :-0.004372   Mean   :-0.0029263   Mean   : 0.01203  
+##  3rd Qu.: 0.02426   3rd Qu.: 0.044671   3rd Qu.: 0.0469540   3rd Qu.: 0.05410  
+##  Max.   : 1.31500   Max.   : 0.475230   Max.   : 0.4210700   Max.   : 0.66593  
+##   PAR_MFCCV16         PAR_MFCCV17        PAR_MFCCV18        PAR_MFCCV19      
+##  Min.   :-0.411860   Min.   :-0.37246   Min.   :-0.43575   Min.   :-0.36608  
+##  1st Qu.:-0.046750   1st Qu.:-0.08672   1st Qu.:-0.11227   1st Qu.:-0.10933  
+##  Median :-0.008052   Median :-0.04856   Median :-0.07955   Median :-0.08109  
+##  Mean   :-0.008546   Mean   :-0.04974   Mean   :-0.07889   Mean   :-0.07787  
+##  3rd Qu.: 0.032730   3rd Qu.:-0.01405   3rd Qu.:-0.04865   3rd Qu.:-0.05391  
+##  Max.   : 0.272170   Max.   : 0.48695   Max.   : 1.43400   Max.   : 2.01830  
+##   PAR_MFCCV20       PAR_THR_1RMS_TOT  PAR_THR_2RMS_TOT   PAR_THR_3RMS_TOT  
+##  Min.   :-0.38755   Min.   :0.02113   Min.   :0.002934   Min.   :0.000000  
+##  1st Qu.:-0.09561   1st Qu.:0.11606   1st Qu.:0.025714   1st Qu.:0.003909  
+##  Median :-0.06726   Median :0.13060   Median :0.028100   Median :0.005782  
+##  Mean   :-0.06825   Mean   :0.12707   Mean   :0.028356   Mean   :0.006297  
+##  3rd Qu.:-0.04064   3rd Qu.:0.14079   3rd Qu.:0.030585   3rd Qu.:0.008240  
+##  Max.   : 1.97350   Max.   :0.19198   Max.   :0.054454   Max.   :0.022141  
+##  PAR_THR_1RMS_10FR_MEAN PAR_THR_1RMS_10FR_VAR PAR_THR_2RMS_10FR_MEAN
+##  Min.   :0.07123        Min.   :7.340e-06     Min.   :0.0006531     
+##  1st Qu.:0.14106        1st Qu.:1.229e-04     1st Qu.:0.0227270     
+##  Median :0.14953        Median :2.303e-04     Median :0.0248270     
+##  Mean   :0.14862        Mean   :4.331e-04     Mean   :0.0248179     
+##  3rd Qu.:0.15657        3rd Qu.:4.435e-04     3rd Qu.:0.0269170     
+##  Max.   :0.39036        Max.   :1.020e-01     Max.   :0.0547270     
+##  PAR_THR_2RMS_10FR_VAR PAR_THR_3RMS_10FR_MEAN PAR_THR_3RMS_10FR_VAR
+##  Min.   :4.962e-07     Min.   :0.000000       Min.   :0.000e+00    
+##  1st Qu.:1.963e-05     1st Qu.:0.001611       1st Qu.:2.091e-06    
+##  Median :3.413e-05     Median :0.002650       Median :5.183e-06    
+##  Mean   :4.699e-05     Mean   :0.003095       Mean   :8.384e-06    
+##  3rd Qu.:6.085e-05     3rd Qu.:0.003951       3rd Qu.:1.100e-05    
+##  Max.   :4.345e-04     Max.   :0.016887       Max.   :1.164e-04    
+##  PAR_PEAK_RMS_TOT PAR_PEAK_RMS10FR_MEAN PAR_PEAK_RMS10FR_VAR    PAR_ZCD        
+##  Min.   : 2.790   Min.   :   3.241      Min.   :      0      Min.   :0.004481  
+##  1st Qu.: 5.229   1st Qu.:   5.793      1st Qu.:      2      1st Qu.:0.026676  
+##  Median : 5.941   Median :   7.042      Median :      5      Median :0.035900  
+##  Mean   : 6.289   Mean   :  11.195      Mean   :   2925      Mean   :0.037713  
+##  3rd Qu.: 6.922   3rd Qu.:   9.377      3rd Qu.:     21      3rd Qu.:0.045016  
+##  Max.   :20.506   Max.   :1448.300      Max.   :5104600      Max.   :0.160050  
+##   PAR_1RMS_TCD       PAR_2RMS_TCD       PAR_3RMS_TCD      PAR_ZCD_10FR_MEAN 
+##  Min.   :0.004077   Min.   :0.001279   Min.   :0.000000   Min.   :0.004332  
+##  1st Qu.:0.024240   1st Qu.:0.007329   1st Qu.:0.001660   1st Qu.:0.026405  
+##  Median :0.033959   Median :0.010150   Median :0.002467   Median :0.035755  
+##  Mean   :0.035743   Mean   :0.010670   Mean   :0.002810   Mean   :0.037718  
+##  3rd Qu.:0.044717   3rd Qu.:0.013107   3rd Qu.:0.003637   3rd Qu.:0.045306  
+##  Max.   :0.158480   Max.   :0.047429   Max.   :0.025932   Max.   :0.166590  
+##  PAR_ZCD_10FR_VAR    PAR_1RMS_TCD_10FR_MEAN PAR_1RMS_TCD_10FR_VAR
+##  Min.   :5.050e-07   Min.   :0.00000        Min.   :0.0000000    
+##  1st Qu.:3.008e-05   1st Qu.:0.02380        1st Qu.:0.0001003    
+##  Median :7.118e-05   Median :0.03405        Median :0.0002207    
+##  Mean   :1.508e-04   Mean   :0.03570        Mean   :0.0003640    
+##  3rd Qu.:1.527e-04   3rd Qu.:0.04488        3rd Qu.:0.0004411    
+##  Max.   :7.564e-03   Max.   :0.16647        Max.   :0.0088854    
+##  PAR_2RMS_TCD_10FR_MEAN PAR_2RMS_TCD_10FR_VAR PAR_3RMS_TCD_10FR_MEAN
+##  Min.   :0.000000       Min.   :0.000e+00     Min.   :0.000000      
+##  1st Qu.:0.006857       1st Qu.:3.131e-05     1st Qu.:0.001502      
+##  Median :0.009861       Median :6.986e-05     Median :0.002286      
+##  Mean   :0.010475       Mean   :1.237e-04     Mean   :0.002682      
+##  3rd Qu.:0.013083       3rd Qu.:1.462e-04     3rd Qu.:0.003472      
+##  Max.   :0.048664       Max.   :6.669e-03     Max.   :0.031118      
+##  PAR_3RMS_TCD_10FR_VAR
+##  Min.   :0.000e+00    
+##  1st Qu.:3.340e-06    
+##  Median :8.846e-06    
+##  Mean   :2.467e-05    
+##  3rd Qu.:2.278e-05    
+##  Max.   :4.314e-03</code></pre>
+<pre class="r"><code>predproba = predict(ModT,type=&quot;response&quot;) # ModT est le résultat de glm
+pred = prediction(predproba,ndata$y) # objet S4
+plot(performance(pred,&quot;sens&quot;,&quot;fpr&quot;),xlab=&quot;&quot;,col=2) # ROC
+legend(&quot;bottomright&quot;,legend=&quot;Apprentissage ModT&quot;,col=&quot;red&quot;)</code></pre>
+<p><img src="data:image/png;base64,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" width="672" /></p>
 </div>
 <div id="erreurs" class="section level2">
 <h2>Erreurs</h2>
