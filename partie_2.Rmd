@@ -4,7 +4,7 @@
 La régression ridge est plus efficace que la régression linéaire ou logistique simple dans le cas de la grande dimmension (plus d'individus que de variables).
 Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées.
 
-```{r, include=FALSE}
+```{r, include=TRUE}
 rm(list=ls())
 data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
 n <- nrow(data)
@@ -14,11 +14,11 @@ p <- ncol(data)
 ```{r}
 corr <- cor(x=data[,-p])
 
-#selection des indices de la matrice de correlation > 0.99
+#selection des indices de la matrice de correlation > 0.75
 high.corr.index.new <- which(corr > 0.75, arr.ind = TRUE) %>% unname
-high.corr.index.new
+(nrow(high.corr.index.new) - p - 1)/2
 ```
-
+141 ont une corrélation supérieure à 75%.
 
 ## 
 
@@ -29,19 +29,27 @@ set.seed(103)
 
 
 
-
-
 ```{r}
-x <- data[,-p] %>% as.matrix()
-y <- ifelse(data$GENRE=="Classical", 1, 0)
+train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
 
-#training and testing samples
-train=sample(c(TRUE,FALSE), n-1, rep=TRUE, prob=c(2/3,1/3))
-x.train <- x[which(train),]
-x.test <- x[which(train==FALSE),]
+x <- data[, -p]
+y <- ifelse(data$GENRE=="Jazz", 1, 0)
+
+train = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
+x.train <- x[which(train),] %>% as.matrix()
+x.test <- x[which(train==FALSE),] %>% as.matrix()
 
 y.train <- y[which(train)]
 y.test <- y[which(train==FALSE)]
+
+data.train <- cbind(x.train, y=y.train)
+data.test <- cbind(x.test, y=y.test)
+
+n.train <- nrow(data.train)
+p.train <- ncol(data.train)
+
+n.test <- nrow(data.test)
+p.test <- ncol(data.test)
 
 grid <- 10^seq(10, -2, length=100)
 

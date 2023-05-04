@@ -50,10 +50,22 @@ prop_jazz
 ```
 
 
+Il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre de l'information sur notre jeu de donnée. C'est d'ailleurs d'autant plus intéressant de les retirer, puisque cela réduit la dimmension et la complexité du modèle.
 
 
-```{r Distribution et transformation log,echo=FALSE}
 
+```{r transformation doublons}
+data <- data[,-c(128:147)]
+n <- nrow(data)
+p <- ncol(data)
+dim(data)
+```
+Il reste bien 172 variables pour 4278 vecteurs de données.
+
+
+Par ailleurs, on remarque que les variables PAR_SC_V et PAR_ASC_V ont des distributions qui ne sont pas gaussiennes avant la transformation log au contraire des autres variables comme PAR_SC.
+
+```{r Distribution et transformation log,echo=TRUE}
 density_plot = function(X,xlab,lxlab){
   density<-ggplot(data,aes(x=X))+geom_density(col="blue")+xlab(xlab)
   log_density<-ggplot(data,aes(x=log(X)))+geom_density(col="red")+xlab(lxlab)
@@ -63,28 +75,17 @@ density_plot = function(X,xlab,lxlab){
 density_plot(data$PAR_SC,xlab="PAR_SC",lxlab="log(PAR_SC)")
 density_plot(data$PAR_SC_V,xlab="PAR_SC_V",lxlab="log(PAR_SC_V)")
 density_plot(data$PAR_ASC_V,xlab="PAR_ASC_V",lxlab="log(PAR_ASC_V)")
-
-
 ```
 
-
-
-On remarque que les variables PAR_SC_V et PAR_ASC_V ont des distributions qui ne sont pas gaussiennes avant la transformation log au contraire des autres variables comme PAR_SC. C'est pourquoi, on leur applique une transformation log.
-
-Par ailleurs, il est indiqué dans la description du jeu de donnée, que les variables 148 à 167 sont les mêmes que celles de 128 à 147. Ainsi, on peut s'en séparer sans risquer de perdre des informations sur notre jeu de donnée.
+On leur applique donc une transformation log.
 
 ```{r transformation doublons}
-rm(list=ls())
-data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+data$PAR_SC_V <- log(data$PAR_SC_V)
+data$PAR_ASC_V <- log(data$PAR_ASC_V)
 
-data.old<-data
-
-data <- data.old[,-c(128:147)]
-data$PAR_SC_V<-log(data$PAR_SC_V)
-data$PAR_ASC_V<-log(data$PAR_ASC_V)
-
-n <- nrow(data)
-p <- ncol(data)
+density_plot(data$PAR_SC,xlab="PAR_SC",lxlab="log(PAR_SC)")
+density_plot(data$PAR_SC_V,xlab="PAR_SC_V",lxlab="log(PAR_SC_V)")
+density_plot(data$PAR_ASC_V,xlab="PAR_ASC_V",lxlab="log(PAR_ASC_V)")
 ```
 
 
@@ -101,12 +102,15 @@ lower.tri <- lower.tri(corr, diag=FALSE)
 high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
 high.corr.index.new
 ```
+
+Nom des variables corrélées:
 ```{r variables corrélées}
 correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
                          names(data)[high.corr.index.new[,2]]), nrow=nrow(high.corr.index.new))
 correlated.variables
 ```
 
+Indices des variables corrélées dans le dataframe original:
 ```{r indices dans le df original, include=FALSE}
 name.list <- as.vector(correlated.variables)
 high.corr.index <- matrix(which(names(data) %in% name.list), nrow=nrow(high.corr.index.new))
@@ -117,13 +121,13 @@ On remarque que les deux premiers couples de variables très corrélées sont en
 les deux dernières mesures associées respectivement aux variables PAR_ASE et PAR_ASEV.
 
 Le dernier couple de corrélation très élevée montre que la variable *PAR_ZCD* est très corrélée
-avec *PAR_ZCD_10FR_MEAN* qui semble être une moyenne de *PAR_ZCD*.
+avec *PAR_ZCD_10FR_MEAN* dont le nom semble qu'il s'agit d'une moyenne des *PAR_ZCD*.
 
 On veillera à bien retirer à chaque fois l'une des deux variables très corrélées,
 en effet les garder augmenterait la dimmension et la complexité du modèle, sans pour autant
 apporter de l'information utile.
 
-On retirera par exemple les variables *PAR_ASE34*, *PAR_ASEV34* et *PAR_ZCD_10FR_MEAN*
+On retirera par exemple les variables *PAR_ASE34*, *PAR_ASEV34* et *PAR_ZCD_10FR_MEAN*.
 
 ```{r}
 data <- data[,-high.corr.index.new[,1]]
@@ -132,66 +136,72 @@ p <- ncol(data)
 
 dim(data)
 ```
+Il reste bien 169 variables pour 4278 vecteurs de données.
+
+
+
+
+
+
+
+
+
+
 
 
 ### Cas des variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV*
 
-Dans le but de continuer notre analyse et de pouvoir utiliser la fonction glm par la suite , il nous faut créer une variable catégorielle y qui prenne comme valeur uniquement 0 et 1.
-Par exemple, le Jazz vaut 0 et le classique vaut 1.
+La description du jeu de données indique que les variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV* ne sont en fait que des combinaisons linéaires et moyennes des autres variables. Ce ne sont pas des variables intrinsèques au jeu de données. On veillera, comme précédemment, à les retirer du jeu de données.
 
-```{r Création de la variable y,include=TRUE}
+```{r}
+#indices <- which(colnames(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
 
-y<-ifelse(data$GENRE=="Classical",1,0)
-
-## On ajoute cette colonne au dataframe
-
-ndata<-cbind(data,y)
-
-## Représentation des valeurs d'une variable selon son genre musical, plot classique et boxplot.
-
-myplot = function(x,Y,xlab=""){
-  plot(x,Y,xlab=xlab, col=Y+1,pch=Y+1);
-  boxplot(x~Y,xlab=xlab,horizontal=TRUE)
-}
-
-myplot(ndata$PAR_ASE_M,ndata$y,"PAR_ASE_M")    
-myplot(ndata$PAR_ASE_MV,ndata$y,"PAR_ASE_MV")
-myplot(ndata$PAR_SFM_M,ndata$y,"PAR_SFM_M")
-myplot(ndata$PAR_SFM_MV,ndata$y,"PAR_SFM_MV")
-
+#data <- data[, -indices]
+#n <- nrow(data)
+#p <- ncol(data)
+#dim(data)
 ```
+(Il reste bien 165 variables pour 4278 vecteurs de données.)
 
-Je pense que ce qu'il faut voir c'est que des fortes valeurs de PAR_ASE_M par exemple, la musique a plus de chance d'être Classique alors que pour des faibles valeurs de PAR_ASE_M, elle a plus de chance d'être du Jazz.
-De même, pour des grandes valeurs de PAR_ASE_MV,PAR_SFM_M, la musique aura plus de chance d'être du Jazz.
 
-Ce sont des valeurs qui jouent un rôle important dans la détermination de notre genre musical, ce sont des features importantes pour un modèle.
+
+
+
+
 
 
 
 
 ## Echantillon d'apprentissage
+
+Dans le but de continuer notre analyse et de pouvoir utiliser la fonction glm par la suite, il nous faut créer une variable catégorielle y qui prenne comme valeur uniquement 0 et 1 selon le genre de l'échantillon.
+On choisira donc arbitrairement le Jazz vaut 1 et le classique vaut 0.
+
 ```{r}
 set.seed(103)
 train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
 
 x <- data[, -p]
-y <- ifelse(data$GENRE=="Classical", 1, 0)
+y <- ifelse(data$GENRE=="Jazz", 1, 0)
 
-train=sample(c(TRUE,FALSE), n-1, rep=TRUE, prob=c(2/3,1/3))
+train = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
 x.train <- x[which(train),]
 x.test <- x[which(train==FALSE),]
 
 y.train <- y[which(train)]
 y.test <- y[which(train==FALSE)]
 
-df.train <- cbind(x.train,y=y.train)
-df.test <- cbind(x.test,y=y.test)
+data.train <- cbind(x.train, y=y.train)
+data.test <- cbind(x.test, y=y.test)
 
-n.train <- nrow(df.train)
-p.train <- ncol(df.train)
+n.train <- nrow(data.train)
+p.train <- ncol(data.train)
 
-n.test <- nrow(df.test)
-p.test <- ncol(df.test)
+n.test <- nrow(data.test)
+p.test <- ncol(data.test)
+
+dim(data.train)
+dim(data.test)
 ```
 
 ## Estimation de modèle
@@ -199,59 +209,68 @@ p.test <- ncol(df.test)
 On commence par créer nos différents modèles à l'aide de la fonction glm du package stats.
 
 
-
 ```{r Définition des modèles,include=TRUE}
-
 ## Définition de Mod0
-
-Mod0 <- glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV,family=binomial, data=df.train)
+Mod0 <- glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV, family=binomial, data=data.train)
 summary(Mod0)
 
-## Pour ModT, il faut enlever les variables fortement corrélées et peut être aussi les autres qui sont évoquées.
-
-## Étape 1 : modifier ndata en fonction des variables que l'on enlève
-
-## Étape 2 : Définir le modèle :
-
-
 ## Définition de ModT
-ModT <- glm(y~.,family=binomial,data=df.train)
+ModT <- glm(y~., family=binomial, data=data.train)
 summary(ModT)
 
 ## On récupère les p-value des variables
-
 p_value <- coef(summary(ModT))[-1,4]
-## On sélectionne celle qui ont un niveau de significativité de 5% et on crée la formule de notre modèle Mod1
 
-index_var_Mod1 <- which(p_value>0.05)
-var_Mod1 <- names(data[index_var_Mod1])
-formula_Mod1 <- as.formula(paste("y ~",paste(var_Mod1, collapse= "+")))
+## On sélectionne celles qui ont un niveau de significativité de 5% et on crée la formule de notre modèle Mod1
+index.var.Mod1 <- which(p_value>0.05)
+var.Mod1 <- names(data[index.var.Mod1])
+formula.Mod1 <- as.formula(paste("y ~",paste(var.Mod1, collapse= "+")))
 
+Mod1<-glm(formula <- formula.Mod1, family=binomial, data=data.train)
 
-Mod1<-glm(formula <- formula_Mod1, family=binomial, data=df.train)
+## On sélectionne celles qui ont un niveau de significativité de 20% et on crée la formule de notre modèle Mod2
+index.var.Mod2 <- which(p_value>0.2)
+var.Mod2 <- names(data[index.var.Mod2])
+formula.Mod2 <- as.formula(paste("y ~",paste(var.Mod2, collapse= "+")))
 
-
-index_var_Mod2 <- which(p_value>0.2)
-var_Mod2 <- names(data[index_var_Mod2])
-formula_Mod2 <- as.formula(paste("y ~",paste(var_Mod2, collapse= "+")))
-
-Mod2<-glm(formula=formula_Mod2, family=binomial, data=df.train)
-
-
-## ModAIC
-library(MASS)
-#step <- stepAIC(ModT)
-
+Mod2 <- glm(formula=formula.Mod2, family=binomial, data=data.train)
 ```
-```{r}
+
+
+```{r stepAIC,include=TRUE}
+library(MASS)
+
+## Attention execution longue
+
+#step <- stepAIC(ModT)
 #step$anova
 ```
+
+Modèle final:
+```{r}
+## Selection des variables eliminees
+removed.variables <- gsub('- ', '', step$anova$Step[-1])
+variable.names <- names(data)[-p]
+
+## Selection des variables à garder
+keep.indices <- ifelse(variables %in% removed.variables, FALSE, TRUE) %>% which()
+variables.AIC <- variable.names[keep.indices]
+
+## Creation de la formule
+formula.AIC <- as.formula(paste("y ~",paste(variables.AIC, collapse= "+")))
+formula.AIC
+```
+
+```{r}
+## Modèle final
+ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
+```
+
 
 
 ## Courbes ROC
 ```{r Import des données de test}
-test_data <- read.csv("Music_test.txt",header=TRUE,sep=";")
-dim(test_data)
+
 ```
 On remarque que les jeux de test à les mêmes défauts que le jeu d'apprentissage, on va donc lui faire subir les mêmes transformations.
 
