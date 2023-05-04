@@ -79,7 +79,7 @@ density_plot(data$PAR_ASC_V,xlab="PAR_ASC_V",lxlab="log(PAR_ASC_V)")
 
 On leur applique donc une transformation log.
 
-```{r transformation doublons}
+```{r transformation log,echo=FALSE}
 data$PAR_SC_V <- log(data$PAR_SC_V)
 data$PAR_ASC_V <- log(data$PAR_ASC_V)
 
@@ -243,49 +243,106 @@ library(MASS)
 ## Attention execution longue
 
 #step <- stepAIC(ModT)
-#step$anova
 ```
 
 Modèle final:
-```{r}
+```{r Formule du modèle AIC, include=TRUE}
 ## Selection des variables eliminees
-removed.variables <- gsub('- ', '', step$anova$Step[-1])
-variable.names <- names(data)[-p]
+#removed.variables <- gsub('- ', '', step$anova$Step[-1])
+#variable.names <- names(data)[-p]
 
 ## Selection des variables à garder
-keep.indices <- ifelse(variables %in% removed.variables, FALSE, TRUE) %>% which()
-variables.AIC <- variable.names[keep.indices]
+#keep.indices <- ifelse(variables %in% removed.variables, FALSE, TRUE) %>% which()
+#variables.AIC <- variable.names[keep.indices]
 
 ## Creation de la formule
-formula.AIC <- as.formula(paste("y ~",paste(variables.AIC, collapse= "+")))
-formula.AIC
+#formula.AIC <- as.formula(paste("y ~",paste(variables.AIC, collapse= "+")))
+#formula.AIC
 ```
 
-```{r}
+```{r Définition du modèle AIC}
 ## Modèle final
-ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
+#ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
 ```
 
 
 
 ## Courbes ROC
-```{r Import des données de test}
 
+
+```{r Courbe ROC,echo=FALSE}
+# On commmence par importer toutes nos variables qui sont st
+
+load("step.RData")
+## ModT apprentissage
+predproba_train_ModT=predict(ModT,type="response") # ModT est le résultat de glm
+pred_train_ModT = prediction(predproba_train_ModT,data.train$y) 
+AUC_train_ModT<-round(performance(pred_train_ModT, 'auc')@y.values[[1]],2) #AUC
+
+
+
+## ModT test
+predproba_test_ModT=predict(ModT,newdata=data.test,type="response")
+pred_test_ModT=prediction(predproba_test_ModT,data.test$y)
+AUC_test_ModT<-round(performance(pred_test_ModT, 'auc')@y.values[[1]],2) #AUC
+
+
+
+## Mod0 test
+
+predproba_test_Mod0=predict(Mod0,newdata=data.test,type="response")
+pred_test_Mod0=prediction(predproba_test_Mod0,data.test$y)
+AUC_Mod0<-round(performance(pred_test_Mod0, 'auc')@y.values[[1]],2) #AUC
+
+## Mod1 test
+
+predproba_test_Mod1=predict(Mod1,newdata=data.test,type="response")
+pred_test_Mod1=prediction(predproba_test_Mod1,data.test$y)
+AUC_Mod1<-round(performance(pred_test_Mod1, 'auc')@y.values[[1]],2) #AUC
+
+## Mod2 test
+
+predproba_test_Mod2=predict(Mod2,newdata=data.test,type="response")
+pred_test_Mod2=prediction(predproba_test_Mod2,data.test$y)
+AUC_Mod2<-round(performance(pred_test_Mod2, 'auc')@y.values[[1]],2) #AUC
+
+
+## ModAIC test
+
+predproba_test_ModAIC=predict(ModAIC,newdata=data.test,type="response")
+pred_test_ModAIC=prediction(predproba_test_ModAIC,data.test$y)
+AUC_ModAIC<-round(performance(pred_test_ModAIC, 'auc')@y.values[[1]],2) #AUC
+
+## Définition de nos légendes
+l_train_ModT<-paste("Apprentissage ModT, AUC=",AUC_train_ModT,sep=" ")
+l_test_ModT<-paste("Test  ModT, AUC=",AUC_test_ModT,sep=" ")
+l_Mod0<-paste("Test Mod0, AUC=",AUC_Mod0,sep=" ")
+l_Mod1<-paste("Test Mod1, AUC=",AUC_Mod1,sep=" ")
+l_Mod2<-paste("Test Mod2, AUC=",AUC_Mod2,sep=" ")
+l_AIC<-paste("Test ModAIC, AUC=",AUC_ModAIC,sep=" ")
+
+## Tracé de nos courbes ROC
+
+plot(performance(pred_train_ModT,"sens","fpr"),xlab="",col="black",main="Courbes ROC de nos différents modèles") # ROC
+plot(performance(pred_test_ModT,"sens","fpr"),xlab="",col="purple",add=TRUE)
+plot(performance(pred_test_Mod0,"sens","fpr"),xlab="",col="blue",add=TRUE)
+plot(performance(pred_test_Mod1,"sens","fpr"),xlab="",col="yellow",add=TRUE)
+plot(performance(pred_test_Mod2,"sens","fpr"),xlab="",col="green",add=TRUE)
+plot(performance(pred_test_ModAIC,"sens","fpr"),xlab="",col="orange",add=TRUE)
+abline(a=0, b=1, col="#33FF66",lty=2)
+
+
+legend("bottomright",legend=c(l_train_ModT,l_test_ModT,l_Mod0,l_Mod1,l_Mod2,l_AIC,"Règle aléatoire"),lty=c(1,1,1,1,1,1,2),col=c("black","purple","blue","yellow","green","orange","green","#33FF66"))
 ```
-On remarque que les jeux de test à les mêmes défauts que le jeu d'apprentissage, on va donc lui faire subir les mêmes transformations.
 
-```{r Transformation jeu d'apprentissage}
-test_data <- test_data[,-c(128:147)]
-test_data$PAR_SC_V <- log(test_data$PAR_SC_V)
-test_data$PAR_ASC_V <- log(test_data$PAR_ASC_V)
 
-```
-```{r Courbe ROC,include=TRUE}
+On peut alors comparer l'aire sous la courbe pour classer nos meilleures règles de décision.
+On constate logiquement que le les prédictions sur le jeu d'apprentissage de ModT sont très précises ce qui était attendu.
 
-predproba = predict(ModT,type="response") # ModT est le résultat de glm
-pred = prediction(predproba,ndata$y) # objet S4
-plot(performance(pred,"sens","fpr"),xlab="",col=2) # ROC
-legend("bottomright",legend="Apprentissage ModT",col="red")
-```
+Toutefois, les performances de ModT sur les données test sont aussi très bonnes et il apparaît qu'avec ModAIC ce sont les deux meilleurs modèles. 
+
+En outre, on remarque que Mod0 est très peu performant et se rapproche d'un choix aléatoire, ceci est dû que les variables retenues sont très peu nombreuses et ne sont pas des variables intrinsèques de notre jeu de donnée (comme évoqué précédemment). 
+
+Enfin, on remarque que Mod1 et un bon modèle alors que Mod12 a des performances plutôt faibles sûrement dues au fait que l'on considère peu de variables dans ce modèle.
 
 ## Erreurs
