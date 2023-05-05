@@ -1,10 +1,27 @@
 
+
+```{r Librairie, include=FALSE, results='hide'}
+library(ggplot2)
+library(plyr)
+library(stats)
+library(tidyverse)
+library(cowplot)
+library(ROCR)
+library(glmnet)
+
+rm(list=ls())
+```
+
+
 ## Intérêt de la régression ridge
 
 La régression ridge est plus efficace que la régression linéaire ou logistique simple dans le cas de la grande dimmension (plus d'individus que de variables).
 Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées.
+
 Le cas des variables très corrélées est problématique puisqu'en régression linéaire, chaque coefficient est interprété comme la variation moyenne de la variable réponse par rapport à la variable associée à ce coefficient, en supposant toutes les autres variables constantes. Cela signifie que nous supposons que nous sommes capables de modifier les valeurs d’une variable prédictive donnée sans changer les valeurs des autres variables prédictives.
+
 Cependant, lorsque deux variables prédictives ou plus sont fortement corrélées, il devient difficile de modifier une variable sans en changer une autre.
+
 Il est donc difficile pour le modèle de régression d’estimer la relation entre chaque variable prédictive et la variable de réponse indépendamment, car les variables prédictives ont tendance à changer à l’unisson.
 
 ```{r, include=TRUE}
@@ -23,19 +40,16 @@ high.corr.index <- sapply(threshold, FUN=function(x) (nrow(which(corr > x, arr.i
 high.corr.index
 ```
 Dans notre cas :
+
 - 142 couples de variables ont une corrélation supérieure à 75%.
 - 43 couples de variables ont une corrélation supérieure à 90%.
 - 22 couples de variables ont une corrélation supérieure à 99%.
 
 L'utilisation de la régression ridge semble bien être justifiée.
 
-## 
+## Package *glmnet*
 
-```{r}
-library(glmnet)
-```
-
-
+On utilisera par la suite le package *glmnet* pour effectuer les régressions ridge.
 
 ```{r}
 names(data)[p] = "y"
@@ -59,14 +73,16 @@ grid <- 10^seq(10, -2, length=100)
 ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=grid, family="binomial")
 ```
 
+
+Les coefficients de régression associés à chaque variable pour chacune des 100 valeurs de lambda:
+
 ```{r}
-# Les coefficients de régression associés à chaque variable pour chacune des 100 valeurs de lambda
 ridge.fit$dim
 ```
 
-En affichant l'évolution des coefficients en fonction de la norme $\mathcal{l}_1$ de $\hat{\theta}_{ridge}$, on remarque qu'il y a globalement deux coefficients qui portent beaucoup de poids.
+En affichant l'évolution des coefficients en fonction de la norme $\mathcal{l}_1$ de $\hat{\theta}_{ridge}$, on remarque qu'il y a globalement deux coefficients qui portent beaucoup de poids, et peut-être même un troisème plus discret.
 
-```{r}
+```{r, fig.align='center'}
 plot(ridge.fit)
 ```
 
@@ -76,11 +92,14 @@ coef.ridge = coef(ridge.fit)[-1,] # enlève le coefficient d'intercept qui n'app
 attained.max <- apply(coef.ridge, MARGIN=1, FUN=function(x) max(abs(x)))
 max.theta.values <- round(attained.max, digits=2)
 
+#coefficient maximal
 max.coefs <- c(which.max(max.theta.values))
 
+#deuxième coefficient maximal
 new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
 max.coefs <- c(max.coefs, new.coef)
 
+#troisième coefficient maximal
 new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
 max.coefs <- c(max.coefs, new.coef)
 
@@ -89,13 +108,14 @@ max.coefs
 ```
 
 Les variables associées à ces trois coefficients sont :
+
 - PAR_SFMV24 la 126ème variable du dataset.
 - PAR_SFMV2 la 104ème variable du dataset.
 - PAR_THR_3RMS_10FR_VAR la 176ème variable du dataset.
 
 
 On peut re-plot le précédent graph en retirant ces 3 variables:
-```{r}
+```{r, fig.align='center'}
 matplot(apply(abs(coef.ridge[-max.coefs,]) ,2 ,sum), t(coef.ridge[-max.coefs,]), main="ridge",
         col=1:10, lty=1:10, type="l", xlab="norme L1", ylab="coefficients")
 ```
@@ -105,7 +125,7 @@ On voit que ces coefficients de la régression on des tendances linéaires forte
 On peut aussi plot l'évolution des coefficients de régression en fonction de $\lambda$, et on constate bien que ces derniers tendent vers 0.
 Plus on augmente la pénalité, plus le modèle se rapproche d'une constante.
 
-```{r}
+```{r, fig.align='center'}
 plot(ridge.fit, xvar = "lambda")
 ```
 
@@ -120,6 +140,7 @@ ridge.fit$lambda
 
 On s'intéresse au choix du meilleur $\lambda$ par validation croisée en 10-folds.
 Pour ce faire, l'algorithme calcul pour chaque $\lambda$ l'erreur associée comme suit :
+
 - Il découpe d'abord le jeu de données en 10-folds homogènes.
 - Il pour chaque fold, il entraîne son modèle sur les 9 folds restants.
 - Il calcule la somme des carrés résiduels sur le fold restant.
