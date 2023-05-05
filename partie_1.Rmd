@@ -154,12 +154,12 @@ Il reste bien 169 variables pour 4278 vecteurs de données.
 La description du jeu de données indique que les variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV* ne sont en fait que des combinaisons linéaires et moyennes des autres variables. Ce ne sont pas des variables intrinsèques au jeu de données. On veillera, comme précédemment, à les retirer du jeu de données.
 
 ```{r}
-#indices <- which(colnames(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+indices <- which(colnames(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
 
-#data <- data[, -indices]
-#n <- nrow(data)
-#p <- ncol(data)
-#dim(data)
+data <- data[, -indices]
+n <- nrow(data)
+p <- ncol(data)
+dim(data)
 ```
 (Il reste bien 165 variables pour 4278 vecteurs de données.)
 
@@ -179,29 +179,27 @@ On choisira donc arbitrairement le Jazz vaut 1 et le classique vaut 0.
 
 ```{r}
 set.seed(103)
-train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
+data.old <- read.csv("Music_2023.txt",sep=";",header=TRUE)
 
-x <- data[, -p]
-y <- ifelse(data$GENRE=="Jazz", 1, 0)
+names(data)[p] = "y"
+names(data.old)[p] = "y"
 
+data$y <- ifelse(data$y=="Jazz", 1, 0)
+data.old$y <- ifelse(data$y=="Jazz", 1, 0)
+
+## echantillon d'entrainement
 train = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
-x.train <- x[which(train),]
-x.test <- x[which(train==FALSE),]
+data.train <- data[which(train),]
+data.old.train <- data.old[which(train),]
 
-y.train <- y[which(train)]
-y.test <- y[which(train==FALSE)]
-
-data.train <- cbind(x.train, y=y.train)
-data.test <- cbind(x.test, y=y.test)
-
-n.train <- nrow(data.train)
-p.train <- ncol(data.train)
-
-n.test <- nrow(data.test)
-p.test <- ncol(data.test)
+## echantillon test
+data.test <- data[which(train==FALSE),]
+data.old.test <- data.old[which(train==FALSE),]
 
 dim(data.train)
+dim(data.old.train)
 dim(data.test)
+dim(data.old.test)
 ```
 
 ## Estimation de modèle
@@ -211,7 +209,8 @@ On commence par créer nos différents modèles à l'aide de la fonction glm du 
 
 ```{r Définition des modèles,include=TRUE}
 ## Définition de Mod0
-Mod0 <- glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV, family=binomial, data=data.train)
+
+Mod0 <- glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV, family=binomial, data=data.old.train)
 summary(Mod0)
 
 ## Définition de ModT
@@ -242,7 +241,7 @@ library(MASS)
 
 ## Attention execution longue
 
-#step <- stepAIC(ModT)
+step <- stepAIC(ModT)
 ```
 
 Modèle final:
