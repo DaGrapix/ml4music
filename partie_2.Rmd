@@ -3,6 +3,9 @@
 
 La régression ridge est plus efficace que la régression linéaire ou logistique simple dans le cas de la grande dimmension (plus d'individus que de variables).
 Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées.
+Le cas des variables très corrélées est problématique puisqu'en régression linéaire, chaque coefficient est interprété comme la variation moyenne de la variable réponse par rapport à la variable associée à ce coefficient, en supposant toutes les autres variables constantes. Cela signifie que nous supposons que nous sommes capables de modifier les valeurs d’une variable prédictive donnée sans changer les valeurs des autres variables prédictives.
+Cependant, lorsque deux variables prédictives ou plus sont fortement corrélées, il devient difficile de modifier une variable sans en changer une autre.
+Il est donc difficile pour le modèle de régression d’estimer la relation entre chaque variable prédictive et la variable de réponse indépendamment, car les variables prédictives ont tendance à changer à l’unisson.
 
 ```{r, include=TRUE}
 rm(list=ls())
@@ -14,50 +17,96 @@ p <- ncol(data)
 ```{r}
 corr <- cor(x=data[,-p])
 
-#selection des indices de la matrice de correlation > 0.75
-high.corr.index.new <- which(corr > 0.75, arr.ind = TRUE) %>% unname
-(nrow(high.corr.index.new) - p - 1)/2
+#selection des indices de la matrice de correlation > threshold
+threshold <- c(0.75, 0.9, 0.99)
+high.corr.index <- sapply(threshold, FUN=function(x) (nrow(which(corr > x, arr.ind = TRUE)) - (p-1))/2)
+high.corr.index
 ```
-141 ont une corrélation supérieure à 75%.
+Dans notre cas :
+- 142 couples de variables ont une corrélation supérieure à 75%.
+- 43 couples de variables ont une corrélation supérieure à 90%.
+- 22 couples de variables ont une corrélation supérieure à 99%.
+
+L'utilisation de la régression ridge semble bien être justifiée.
 
 ## 
 
 ```{r}
 library(glmnet)
-set.seed(103)
 ```
 
 
 
 ```{r}
+names(data)[p] = "y"
+data$y <- ifelse(data$y=="Jazz", 1, 0)
+
+
+set.seed(103)
 train=sample(c(TRUE,FALSE),n,rep=TRUE,prob=c(2/3,1/3))
 
-x <- data[, -p]
-y <- ifelse(data$GENRE=="Jazz", 1, 0)
+data.train <- data[which(train),]
+data.test <- data[which(train==FALSE),]
 
-train = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
-x.train <- x[which(train),] %>% as.matrix()
-x.test <- x[which(train==FALSE),] %>% as.matrix()
+x.train <- data.train[,-p] %>% as.matrix()
+y.train <- data.train[,p]
 
-y.train <- y[which(train)]
-y.test <- y[which(train==FALSE)]
-
-data.train <- cbind(x.train, y=y.train)
-data.test <- cbind(x.test, y=y.test)
-
-n.train <- nrow(data.train)
-p.train <- ncol(data.train)
-
-n.test <- nrow(data.test)
-p.test <- ncol(data.test)
+x.test <- data.test[,-p] %>% as.matrix()
+y.test <- data.test[,p]
 
 grid <- 10^seq(10, -2, length=100)
 
 ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=grid, family="binomial")
+```
+
+```{r}
+# Les coefficients de régression associés à chaque variable pour chacune des 100 valeurs de lambda
+ridge.fit$dim
+```
+
+En affichant l'évolution des coefficients en fonction de la norme $\mathcal{l}_1$ de $\hat{\theta}_{ridge}$, on remarque qu'il y a globalement deux coefficients qui portent beaucoup de poids.
+
+```{r}
+plot(ridge.fit)
+```
+
+```{r}
 coef.ridge = coef(ridge.fit)[-1,] # enlève le coefficient d'intercept qui n'apporte rien
 
-plot(coef(ridge.fit)[1,])
-plot(ridge.fit)
+attained.max <- apply(coef.ridge, MARGIN=1, FUN=function(x) max(abs(x)))
+max.theta.values <- round(attained.max, digits=2)
+
+max.coefs <- c(which.max(max.theta.values))
+
+new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
+max.coefs <- c(max.coefs, new.coef)
+
+new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
+max.coefs <- c(max.coefs, new.coef)
+
+names(max.coefs) <- names(data)[max.coefs]
+max.coefs
+```
+
+Les variables associées à ces trois coefficients sont :
+- PAR_SFMV24 la 126ème variable du dataset.
+- PAR_SFMV2 la 104ème variable du dataset.
+- PAR_THR_3RMS_10FR_VAR la 176ème variable du dataset.
+
+
+On peut re-plot le précédent graph en retirant ces 3 variables:
+```{r}
+matplot(apply(abs(coef.ridge[-max.coefs,]) ,2 ,sum), t(coef.ridge[-max.coefs,]), main="ridge",
+        col=1:10, lty=1:10, type="l", xlab="norme L1", ylab="coefficients")
+```
+On voit que ces coefficients de la régression on des tendances linéaires fortes en fonction de la norme $\mathcal{l}_1$.
+
+
+On peut aussi plot l'évolution des coefficients de régression en fonction de $\lambda$, et on constate bien que ces derniers tendent vers 0.
+Plus on augmente la pénalité, plus le modèle se rapproche d'une constante.
+
+```{r}
+plot(ridge.fit, xvar = "lambda")
 ```
 
 
@@ -67,47 +116,77 @@ ridge.fit$lambda
 ```
 
 
-```{r}
-# Les coefficients de régression associés à chaque variable pour chacune des 100 valeurs de lambda
-ridge.fit$dim
-```
+## Validation croisée et choix du $\lambda$ optimal
 
-## Cross-validation et choix du modèle
+On s'intéresse au choix du meilleur $\lambda$ par validation croisée en 10-folds.
+Pour ce faire, l'algorithme calcul pour chaque $\lambda$ l'erreur associée comme suit :
+- Il découpe d'abord le jeu de données en 10-folds homogènes.
+- Il pour chaque fold, il entraîne son modèle sur les 9 folds restants.
+- Il calcule la somme des carrés résiduels sur le fold restant.
+- Il ajoute cette erreur à l'erreur du modèle et réitère sur le prochain fold.
+
+L'algorithme choisit finalement le lambda pour lequel l'erreur calculée est la plus faible.
+
+L'avantage de la validation croisée est qu'elle permet de prendre en compte l'ensemble des données
+que l'on possède dans le choix du modèle.
+
+Elle permet ainsi de réduire la variance du modèle choisi.
 
 ```{r}
 set.seed(314)
+
+grid <- 10^seq(10, -2, length=100)
 cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
 bestlam=cv.out$lambda.min
 plot(cv.out)
 
 bestlam
 ```
-On voit que la SSR minimum est atteinte pour $\lambda$=0.01 sur la frontière du domaine.
+
+On voit que la SCR minimum est atteinte pour $\lambda$=0.01 sur la frontière du domaine.
 Il serait judicieux de ré-effectuer la validation-croisée pour des nouvelles valeurs de $\lambda$.
-Le minimum sera sûrement atteint avant $10^0$.
+Le minimum étant sûrement atteint avant $10^0$, on choisira une grille de $10^0$ à $10^{-5}$.
 
 ```{r}
+set.seed(314)
 grid <- 10^seq(0, -5, length=100)
 
-cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+## Attention c'est long
+#cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+
 bestlam=cv.out$lambda.min
 plot(cv.out)
 
 bestlam
 ```
 
-On obtient finalement le meilleur $\lambda$ : 0.008497534.
+On obtient finalement le meilleur $\lambda$ : 0.0007390722, qui est finalement un ordre de grandeur en dessous de celui qui était trouvé précédemment.
 
+On peut maintenant effectuer la régression ridge avec ce $\lambda$ obtenu sur le jeu de données d'entraînement complet:
 ```{r}
-bestlam = 0.008497534
+bestlam <- 0.0007390722
 ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=bestlam, family="binomial")
-ridge.pred = predict(ridge.fit, s=bestlam, newx=x.test)
-mean((ridge.pred-y.test)^2)
+```
 
-out = glmnet(x,y,alpha=0)
-predict(out,type="coefficients",s=bestlam)[1:11,]
+**Erreur d'apprentissage:**
+```{r}
+ridge.pred.train = predict(ridge.fit, s=bestlam, newx=x.train)
+mean((ridge.pred.train - y.train)^2)
+```
+
+
+**Erreur de généralisation:**
+```{r}
+ridge.pred.test = predict(ridge.fit, s=bestlam, newx=x.test)
+mean((ridge.pred.test - y.test)^2)
 ```
 
 
 
-## Performance
+
+## Performance sur l'ensemble des variables
+
+```{r}
+set.seed(4658)
+```
+
