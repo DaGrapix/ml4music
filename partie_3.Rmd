@@ -12,7 +12,7 @@ library(doParallel)
 ```{r Import des données et transformation,echo=FALSE}
 setwd(getwd())
 data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
-
+data.old<-read.csv("Music_2023.txt",sep=";",header=TRUE)
 data <- data[,-c(128:147)]
 n <- nrow(data)
 p <- ncol(data)
@@ -36,16 +36,20 @@ data <- data[, -indices]
 n <- nrow(data)
 p <- ncol(data)
 names(data)[p] = "y"
+names(data.old)[ncol(data.old)] = "y"
+
 data$y <- ifelse(data$y=="Jazz", 1, 0)
+data.old$y<-ifelse(data.old$y=="Jazz", 1, 0)
 ```
 
 Étant donné que ce n'est pas précisé dans l'énoncé si nous devons scinder les données en échantillon d'apprentissage et de test ou bien utiliser la validation croisée, nous nous sommes tourner vers un processus de validation croisée.
 ```{r Validation croisée, include=TRUE}
 
 x<-data[,-p]
+y<-as.factor(data$y)
+x.old<-data.old[,-ncol(data.old)]
+y.old<-as.factor(data.old$y)
 summary(x)
-data$y<-as.factor(data$y)
-
 set.seed(564)
 
 
@@ -55,28 +59,19 @@ k_grid=data.frame(k=1:30)
 
 cl<-makePSOCKcluster(7)
 registerDoParallel(cl)
-knn.cv<-train(y~.,data=data,method="knn",trControl = knn_ctrl, tuneGrid =k_grid ,metric="Accuracy",preProcess = c("center", "scale"))
+#knn.cv<-train(x=x,y=y,method="knn",trControl = knn_ctrl, tuneGrid =expand.grid(k=1) ,metric="Accuracy")
 
+knn_cv_old<-train(x=x.old,y=y.old,method="knn",trControl = knn_ctrl, tuneGrid =expand.grid(k=1:30) ,preProcess = c("center", "scale"))
 
 stopCluster(cl)
 
 
-print(knn.cv)
-plot(knn.cv)
+print(knn_cv_old)
+plot(knn_cv_old)
 
 ```
 
-```{r un voisin,include=TRUE}
-## Échantillon test et apprentissage
-set.seed(423)
-train_knn = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
-data.train <- data[which(train_knn),]
-data_test<-data[which(train_knn==FALSE),]
 
-knn1<-knn(train=data.train,test=data_test,cl=data$y,k=1)
-
-summary(knn1)
-```
 
 
 ## Bonus
