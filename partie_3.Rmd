@@ -1,6 +1,82 @@
 
+```{r Import des librairies, include=FALSE}
 
+library(caret)
+library(class)
+library(tidyverse)
+library(doParallel)
+```
 ## K-plus proches voisins
+
+
+```{r Import des données et transformation,echo=FALSE}
+setwd(getwd())
+data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+
+data <- data[,-c(128:147)]
+n <- nrow(data)
+p <- ncol(data)
+corr <- cor(x=data[,-p])
+high.corr.index.new <- which(corr > 0.99, arr.ind = TRUE) %>% unname
+
+
+lower.tri <- lower.tri(corr, diag=FALSE)
+high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                         names(data)[high.corr.index.new[,2]]), nrow=nrow(high.corr.index.new))
+name.list <- as.vector(correlated.variables)
+high.corr.index <- matrix(which(names(data) %in% name.list), nrow=nrow(high.corr.index.new))
+data <- data[,-high.corr.index.new[,1]]
+n <- nrow(data)
+p <- ncol(data)
+
+indices <- which(colnames(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+
+data <- data[, -indices]
+n <- nrow(data)
+p <- ncol(data)
+names(data)[p] = "y"
+data$y <- ifelse(data$y=="Jazz", 1, 0)
+```
+
+Étant donné que ce n'est pas précisé dans l'énoncé si nous devons scinder les données en échantillon d'apprentissage et de test ou bien utiliser la validation croisée, nous nous sommes tourner vers un processus de validation croisée.
+```{r Validation croisée, include=TRUE}
+
+x<-data[,-p]
+summary(x)
+data$y<-as.factor(data$y)
+
+set.seed(564)
+
+
+knn_ctrl<-trainControl(method="cv",number=10)
+#k<-data.frame(k=1)
+k_grid=data.frame(k=1:30)
+
+cl<-makePSOCKcluster(7)
+registerDoParallel(cl)
+knn.cv<-train(y~.,data=data,method="knn",trControl = knn_ctrl, tuneGrid =k_grid ,metric="Accuracy",preProcess = c("center", "scale"))
+
+
+stopCluster(cl)
+
+
+print(knn.cv)
+plot(knn.cv)
+
+```
+
+```{r un voisin,include=TRUE}
+## Échantillon test et apprentissage
+set.seed(423)
+train_knn = sample(c(TRUE,FALSE), n, rep=TRUE, prob=c(2/3,1/3))
+data.train <- data[which(train_knn),]
+data_test<-data[which(train_knn==FALSE),]
+
+knn1<-knn(train=data.train,test=data_test,cl=data$y,k=1)
+
+summary(knn1)
+```
 
 
 ## Bonus
