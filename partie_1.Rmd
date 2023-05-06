@@ -22,6 +22,23 @@ n <- nrow(data)
 p <- ncol(data)
 ```
 
+
+```{r import,include=TRUE}
+par(mfrow=c(2,2))
+
+data.mean.ASE <- apply(data[,4:37], MARGIN=1, FUN=mean)
+plot(x=data.mean.ASE, y=data$PAR_ASE_M)
+
+data.mean.ASEV <- apply(data[,39:72], MARGIN=1, FUN=mean)
+plot(x=data.mean.ASEV, y=data$PAR_ASE_MV)
+
+data.mean.SFM <-apply(data[,78:101], MARGIN=1, FUN=mean)
+plot(x=data.mean.SFM_M, y=data$PAR_SFM_M)
+
+data.mean.SFMV <-apply(data[,103:126], MARGIN=1, FUN=mean)
+plot(x=data.mean.SFMV_M, y=data$PAR_SFM_MV)
+```
+
 Les dimensions du dataset importé sont correctes. Il y a bien 192 variables pour 4278 vecteurs de données.
 
 
@@ -144,22 +161,41 @@ Il reste bien 169 variables pour 4278 vecteurs de données.
 
 
 
-
-
-
-
-
 ### Cas des variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV*
 
 La description du jeu de données indique que les variables *PAR_ASE_M*, *PAR_ASE_MV*, *PAR_SFM_M* et *PAR_SFM_MV* ne sont en fait que des combinaisons linéaires et moyennes des autres variables. Ce ne sont pas des variables intrinsèques au jeu de données. On veillera, comme précédemment, à les retirer du jeu de données.
 
 ```{r}
+data[-p] <- scale(data[-p])
 indices <- which(colnames(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+indices
+
+
+data$GENRE <- ifelse(data$GENRE=="Jazz", 1, 0)
+
+ggplot(data) + geom_point(aes(x=PAR_SFM_M, y=GENRE), col="blue")  + geom_point(aes(x=PAR_SFM_MV, y=GENRE), col="red")
 
 data <- data[, -indices]
 n <- nrow(data)
 p <- ncol(data)
 dim(data)
+
+
+plot((data$PAR_ASE_M),(data$PAR_SFM_M),col=data$GENRE+1,pch=data$GENRE+1,cex=data$GENRE+1)
+
+myplot = function(x,Y,xlab=""){
+  plot(x,Y,xlab=xlab, col=Y+1,pch=Y+1);
+  boxplot(x~Y,xlab=xlab,horizontal=TRUE)
+}
+
+
+
+
+
+myplot(data$PAR_ASE_M,data$GENRE,"PAR_ASE_M")
+myplot(data$PAR_ASE_MV,data$GENRE,"PAR_ASE_MV")
+myplot(data$PAR_SFM_M,data$GENRE,"PAR_SFM_M")
+myplot(data$PAR_SFM_MV,data$GENRE,"PAR_SFM_MV")
 ```
 (Il reste bien 165 variables pour 4278 vecteurs de données.)
 

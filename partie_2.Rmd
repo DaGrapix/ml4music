@@ -8,15 +8,13 @@ library(tidyverse)
 library(cowplot)
 library(ROCR)
 library(glmnet)
-
-rm(list=ls())
 ```
 
 
 ## Intérêt de la régression ridge
 
 La régression ridge est plus efficace que la régression linéaire ou logistique simple dans le cas de la grande dimmension (plus d'individus que de variables).
-Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées.
+Elle peut aussi être très efficace lorsque les variables explicatives sont très corrélées, ce qui est généralement le cas lorsque le nombre de variables explicatives est suffisamment grand devant l'échantillon d'individus.
 
 Le cas des variables très corrélées est problématique puisqu'en régression linéaire, chaque coefficient est interprété comme la variation moyenne de la variable réponse par rapport à la variable associée à ce coefficient, en supposant toutes les autres variables constantes. Cela signifie que nous supposons que nous sommes capables de modifier les valeurs d’une variable prédictive donnée sans changer les valeurs des autres variables prédictives.
 
@@ -24,15 +22,32 @@ Cependant, lorsque deux variables prédictives ou plus sont fortement corrélée
 
 Il est donc difficile pour le modèle de régression d’estimer la relation entre chaque variable prédictive et la variable de réponse indépendamment, car les variables prédictives ont tendance à changer à l’unisson.
 
+Ceci reste un problème dans le cas de la classification où l'on fait correspondre la probabilité de classer un individu en fonction d'un régresseur linéaire que l'on fait passer dans une fonction lien.
+
 ```{r, include=TRUE}
 rm(list=ls())
 data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+data <- data[,-c(128:147)]
+data$PAR_SC_V <- log(data$PAR_SC_V)
+data$PAR_ASC_V <- log(data$PAR_ASC_V)
+
+
+corr <- cor(x=data[,-ncol(data)])
+high.corr.index.new <- which(corr > 0.99, arr.ind = TRUE) %>% unname
+lower.tri <- lower.tri(corr, diag=FALSE)
+high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+high.corr.index.new
+data <- data[,-high.corr.index.new[,1]]
+
+
 n <- nrow(data)
 p <- ncol(data)
+
+dim(data)
 ```
 
 ```{r}
-corr <- cor(x=data[,-p])
+corr <- cor(x=data.0[,-ncol(data.0)])
 
 #selection des indices de la matrice de correlation > threshold
 threshold <- c(0.75, 0.9, 0.99)

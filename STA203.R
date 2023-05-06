@@ -1,0 +1,228 @@
+#Mini projet
+#Anthony Kalaydjian - Mathieu Occhipinti
+
+library(ggplot2)
+library(plyr)
+library(stats)
+library(tidyverse)
+library(cowplot)
+library(ROCR)
+library(MASS)
+library(glmnet)
+
+setwd(getwd())
+rm(list=ls())
+graphics.off()
+
+
+####################################
+############# Partie 1 #############
+####################################
+
+
+############################    Q1
+
+## importation des données
+data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+dim(data)
+#Les données ont bien été importées
+
+#Remarque: on garde une copie du dataframe original
+data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+
+
+
+## Analyse uni et bi variée
+
+
+
+## Proportion des genres musicaux
+proportion.classique <- mean(ifelse(data$GENRE=="Classical", 1, 0))
+proportion.jazz <- mean(ifelse(data$GENRE=="Jazz", 1, 0))
+
+proportion.classique
+proportion.jazz
+#Les deux catégories sont relativement équivalentes en taille, c'est bien pour la classification.
+
+
+#On sauvegarde les indices variables à retirer
+#Ici on retirera les variables en double
+indices.retires <- c(128:147)
+
+## Analyse de densité des variables PAR_SC, PAR_SCV et PAR_ASC_V
+density_plot <- function(X,xlab,lxlab){
+  density <- ggplot(data.0,aes(x=X)) + geom_density(col="blue") + xlab(xlab)
+  log_density <- ggplot(data.0, aes(x=log(X))) + geom_density(col="red") + xlab(lxlab)
+  plot_grid(density, log_density, labels=c("Densité","Densité log"), label_size=12, ncol=1, label_x=0, label_y=0, hjust=-0.5, vjust=-0.5)
+}
+
+density_plot(data.0$PAR_SC, xlab="PAR_SC", lxlab="log(PAR_SC)")
+density_plot(data.0$PAR_SC_V, xlab="PAR_SC_V", lxlab="log(PAR_SC_V)")
+density_plot(data.0$PAR_ASC_V, xlab="PAR_ASC_V", lxlab="log(PAR_ASC_V)")
+
+## Transformation log
+data.0$PAR_SC_V <- log(data.0$PAR_SC_V)
+data.0$PAR_ASC_V <- log(data.0$PAR_ASC_V)
+
+density_plot(data.0$PAR_SC, xlab="PAR_SC", lxlab="log(PAR_SC)")
+density_plot(data.0$PAR_SC_V, xlab="PAR_SC_V", lxlab="log(PAR_SC_V)")
+
+
+## Variables très corrélées
+#Remarque: on a ici déjà retiré les doublons
+data <- data.0[, -indices.retires]
+corr <- cor(x=data[, -ncol(data)])
+
+#selection des indices de la matrice de correlation > 0.99
+high.corr.index.new <- which(corr > 0.99, arr.ind = TRUE) %>% unname
+
+#selection des indices appartenant a la matrice triangulaire inferieure stricte,
+#pour retirer les doublons, ainsi que les elements diagonaux.
+lower.tri <- lower.tri(corr, diag=FALSE)
+high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+high.corr.index.new
+
+#nom des couples de variables très corrélées
+correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                                 names(data)[high.corr.index.new[,2]]),
+                                 nrow=nrow(high.corr.index.new))
+correlated.variables
+
+#Calcul des indices de ces variables dans le dataframe d'origine
+name.list <- as.vector(correlated.variables)
+high.corr.index <- matrix(which(names(data) %in% name.list), nrow=nrow(high.corr.index.new))
+high.corr.index
+
+#On retirera high.corr.index[,1]
+indices.retires <- c(indices.retires, high.corr.index[,1])
+
+
+
+## Cas des variables PAR_ASE_M, PAR_ASE_MV, PAR_SFM_M et PAR_SFM_MV
+
+#Remarque, on réutilise le dataframe original ici
+indices.ASE <- c(4:37)
+indices.ASEV <- c(39:72)
+indices.SFM <- c(78:101)
+indices.SFMV <- c(103:126)
+
+par(mfrow=c(2,2))
+
+data.mean.ASE <- apply(data.0[,indices.ASE], MARGIN=1, FUN=mean)
+plot(x=data.mean.ASE, y=data.0$PAR_ASE_M, xlab="mean(PAR_ASE)", ylab="PAR_ASE_M")
+
+data.mean.ASEV <- apply(data.0[,indices.ASEV], MARGIN=1, FUN=mean)
+plot(x=data.mean.ASEV, y=data.0$PAR_ASE_MV, xlab="mean(PAR_ASEV)", ylab="PAR_ASE_MV")
+
+data.mean.SFM <-apply(data.0[,indices.SFM], MARGIN=1, FUN=mean)
+plot(x=data.mean.SFM, y=data.0$PAR_SFM_M, xlab="mean(PAR_SFM)", ylab="PAR_SFM_M")
+
+data.mean.SFMV <-apply(data.0[,indices.SFMV], MARGIN=1, FUN=mean)
+plot(x=data.mean.SFMV, y=data.0$PAR_SFM_MV, xlab="mean(PAR_SFMV)", ylab="PAR_SFM_MV")
+#On les 4 variables étudiées sont bien les moyennes des différentes observations
+#auxquelles elles sont associées, elles n'apportent pas d'information, on les retire.
+
+#Indice des variables dans le dataframe original.
+indices.4 <- which(names(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+
+#On obtient ainsi la liste finale de toutes les variables que l'on va retirer du dataframe.
+indices.retires <- c(indices.retires, indices.4)
+indices.retires
+
+length(indices.retires)
+#On retirera donc 27 variables au total.
+
+
+############################    Q2
+
+#Renommage de GENRE, et variable booléenne
+names(data.0)[ncol(data.0)] = "y"
+data.0$y <- ifelse(data.0$y=="Jazz", 1, 0)
+
+## Echantillon d'apprentissage
+set.seed(103)
+train = sample(c(TRUE,FALSE), nrow(data.0), rep=TRUE, prob=c(2/3,1/3))
+
+#On retirera les variables plus tard
+data.train.0 <- data.0[which(train),]
+data.test.0 <- data.0[which(train==FALSE),]
+
+#On retire les 27 variables
+data <- data.0[, -indices.retires]
+data.train <- data.train.0[, -indices.retires]
+data.test <- data.test.0[, -indices.retires]
+
+dim(data)
+dim(data.train)
+dim(data.test)
+
+
+############################    Q3
+
+## Estimation de modèle
+
+#Définition de Mod0
+Mod0 <- glm(y~PAR_TC+PAR_SC+PAR_SC_V+PAR_ASE_M,PAR_ASE_MV+PAR_SFM_M+PAR_SFM_MV, family=binomial, data=data.train.0)
+summary(Mod0)
+
+#Définition de ModT
+ModT <- glm(y~., family=binomial, data=data.train)
+summary(ModT)
+
+
+#On récupère les p-value des tests de significativité des coefficients de ModT
+p_value <- coef(summary(ModT))[-1,4]
+
+
+#On sélectionne les variables dont le coefficient a un niveau de significativité de 5% et on crée la formule de notre modèle Mod1
+index.var.Mod1 <- which(p_value>0.05)
+var.Mod1 <- names(data[index.var.Mod1])
+formula.Mod1 <- as.formula(paste("y ~", paste(var.Mod1, collapse="+")))
+Mod1<-glm(formula <- formula.Mod1, family=binomial, data=data.train)
+summary(Mod1)
+
+#On sélectionne les variables dont le coefficient a un niveau de significativité de 20% et on crée la formule de notre modèle Mod1
+index.var.Mod2 <- which(p_value>0.2)
+var.Mod2 <- names(data[index.var.Mod2])
+formula.Mod2 <- as.formula(paste("y ~", paste(var.Mod2, collapse="+")))
+Mod2 <- glm(formula=formula.Mod2, family=binomial, data=data.train)
+summary(Mod2)
+
+
+## Méthode AIC
+
+#stepAIC
+step <- stepAIC(ModT)
+
+#Selection des variables eliminees
+removed.variables <- gsub('- ', '', step$anova$Step[-1])
+variable.names <- names(data)[-p]
+
+#Selection des variables à garder
+keep.indices <- ifelse(variables %in% removed.variables, FALSE, TRUE) %>% which()
+variables.AIC <- variable.names[keep.indices]
+
+#Creation de la formule
+formula.AIC <- as.formula(paste("y ~",paste(variables.AIC, collapse= "+")))
+formula.AIC
+
+#Modèle final obtenu
+ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
+
+
+
+
+############################    Q4
+
+
+####################################
+############# Partie 2 #############
+####################################
+
+
+
+
+
+####################################
+############# Partie 3 #############
+####################################
