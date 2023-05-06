@@ -36,6 +36,19 @@ data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Proportion des genres musicaux
 proportion.classique <- mean(ifelse(data$GENRE=="Classical", 1, 0))
 proportion.jazz <- mean(ifelse(data$GENRE=="Jazz", 1, 0))
@@ -74,7 +87,7 @@ data <- data.0[, -indices.retires]
 corr <- cor(x=data[, -ncol(data)])
 
 #selection des indices de la matrice de correlation > 0.99
-high.corr.index.new <- which(corr > 0.99, arr.ind = TRUE) %>% unname
+high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
 
 #selection des indices appartenant a la matrice triangulaire inferieure stricte,
 #pour retirer les doublons, ainsi que les elements diagonaux.
@@ -189,17 +202,18 @@ Mod2 <- glm(formula=formula.Mod2, family=binomial, data=data.train)
 summary(Mod2)
 
 
-## Méthode AIC
+## Méthode de selection de variable AIC
 
 #stepAIC
-step <- stepAIC(ModT)
+## Attention, execution longue...
+#step <- stepAIC(ModT)
 
 #Selection des variables eliminees
 removed.variables <- gsub('- ', '', step$anova$Step[-1])
-variable.names <- names(data)[-p]
+variable.names <- names(data)[-ncol(data)]
 
 #Selection des variables à garder
-keep.indices <- ifelse(variables %in% removed.variables, FALSE, TRUE) %>% which()
+keep.indices <- ifelse(variable.names %in% removed.variables, FALSE, TRUE) %>% which()
 variables.AIC <- variable.names[keep.indices]
 
 #Creation de la formule
@@ -215,12 +229,201 @@ ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
 ############################    Q4
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####################################
 ############# Partie 2 #############
 ####################################
 
 
+############################    Q1
 
+corr <- cor(x=data[,-ncol(data)])
+
+#selection des indices de la matrice de correlation > threshold
+threshold <- c(0.75, 0.9)
+high.corr.index <- sapply(threshold, FUN=function(x) (nrow(which(corr > x, arr.ind = TRUE)) - (ncol(data)-1))/2)
+high.corr.index
+
+# Meme après avoir retiré les variables de la partie 1,
+# 108 couples de variables ont un coefficient de correlation > 75%
+# 21  couples de variables ont un coefficient de correlation > 90%
+
+
+x.train <- data.train[,-ncol(data.train)] %>% as.matrix()
+y.train <- data.train[,ncol(data.train)]
+
+x.test <- data.test[,-ncol(data.test)] %>% as.matrix()
+y.test <- data.test[,ncol(data.test)]
+
+
+
+############################    Q2
+
+
+
+grid <- 10^seq(10, -2, length=100)
+
+ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=grid, family="binomial")
+
+ridge.fit$dim
+plot(ridge.fit)
+#On remarque que 2 voire 3 coefficients ont un comportement different des autres et explosent
+
+
+
+
+## determination des coefficients qui explosent
+coef.ridge = coef(ridge.fit)[-1,] # enlève le coefficient d'intercept qui n'apporte rien
+
+attained.max <- apply(coef.ridge, MARGIN=1, FUN=function(x) max(abs(x)))
+max.theta.values <- round(attained.max, digits=2)
+
+#coefficient maximal
+max.coefs <- c(which.max(max.theta.values))
+
+#deuxième coefficient maximal
+new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
+max.coefs <- c(max.coefs, new.coef)
+
+#troisième coefficient maximal
+new.coef <- which(names(data) == names(which.max(max.theta.values[-max.coefs])))
+max.coefs <- c(max.coefs, new.coef)
+
+names(max.coefs) <- names(data)[max.coefs]
+max.coefs
+
+#Les variables associées à ces trois coefficients sont :
+# PAR_SFMV24 la 126ème variable du dataset.
+# PAR_SFMV2 la 104ème variable du dataset.
+# PAR_THR_3RMS_10FR_VAR la 176ème variable du dataset.
+
+
+## Plot de l'evolution des coefficients, en ayant retire ceux qui explosent
+matplot(apply(abs(coef.ridge[-max.coefs,]) ,2 ,sum), t(coef.ridge[-max.coefs,]), main="ridge",
+        col=1:10, lty=1:10, type="l", xlab="norme L1", ylab="coefficients")
+
+
+
+
+## Plot de l'evolution des coefficients en fonction du coefficient de penalite
+plot(ridge.fit, xvar = "lambda")
+
+
+############################    Q3
+set.seed(314)
+
+grid <- 10^seq(10, -2, length=100)
+cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+bestlam=cv.out$lambda.min
+plot(cv.out)
+
+bestlam
+
+
+#On voit que la SCR minimum est atteinte pour lambda=0.01 sur la frontière du domaine.
+#Il serait judicieux de ré-effectuer la validation-croisée pour des nouvelles valeurs de lambda.
+#Le minimum étant sûrement atteint avant 10^0, on choisira une grille de 10^0 à 10^-5$.
+
+
+set.seed(314)
+grid <- 10^seq(0, -5, length=100)
+
+cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+
+bestlam=cv.out$lambda.min
+plot(cv.out)
+
+bestlam
+#on trouve 0.0009326033 qui n'est pas sur la frontière, c'est le lambda optimal.
+
+
+ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=bestlam, family="binomial")
+
+
+
+## Erreur d'apprentissage
+ridge.pred.train = predict(ridge.fit, s=bestlam, newx=x.train)
+mean((ridge.pred.train - y.train)^2)
+#14.26256
+
+
+## Erreur de généralisation
+ridge.pred.test = predict(ridge.fit, s=bestlam, newx=x.test)
+mean((ridge.pred.test - y.test)^2)
+#15.71024
+
+
+
+############################    Q4
+
+#On considere toutes les variables
+x.train.0 <- data.train.0[,-ncol(data.train.0)] %>% as.matrix()
+y.train.0 <- data.train.0[,ncol(data.train.0)]
+
+x.test.0 <- data.test.0[,-ncol(data.test.0)] %>% as.matrix()
+y.test.0 <- data.test.0[,ncol(data.test.0)]
+
+
+set.seed(4658)
+grid <- 10^seq(10, -2, length=100)
+cv.out.0 <- cv.glmnet(x=x.train.0, y=y.train.0, lambda=grid, nfolds=10)
+bestlam.0 <- cv.out.0$lambda.min
+plot(cv.out.0)
+
+bestlam.0
+#meme situation
+
+
+#nouvelle grid
+set.seed(4658)
+grid <- 10^seq(0, -5, length=100)
+##Attention calcul long
+cv.out.0 <- cv.glmnet(x=x.train.0, y=y.train.0, lambda=grid, nfolds=10)
+bestlam.0 <- cv.out.0$lambda.min
+plot(cv.out.0)
+
+bestlam.0
+#on trouve lambda=0.0007390722
+
+ridge.fit.0 <- glmnet(x=x.train.0, y=y.train.0, alpha=0, lambda=bestlam.0, family="binomial")
+
+
+## Erreur d'apprentissage
+ridge.pred.train.0 = predict(ridge.fit.0, s=bestlam.0, newx=x.train.0)
+mean((ridge.pred.train.0 - y.train.0)^2)
+#15.49832
+
+
+## Erreur de généralisation
+ridge.pred.test.0 = predict(ridge.fit.0, s=bestlam.0, newx=x.test.0)
+mean((ridge.pred.test.0 - y.test.0)^2)
+#17.14912
+
+#Les erreurs sont plus élevées ici,
+#Ce modèle est moins bon que le précédent.
 
 
 ####################################
