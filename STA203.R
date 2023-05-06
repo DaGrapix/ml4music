@@ -103,8 +103,15 @@ correlated.variables
 
 #Calcul des indices de ces variables dans le dataframe d'origine
 name.list <- as.vector(correlated.variables)
-high.corr.index <- matrix(which(names(data) %in% name.list), nrow=nrow(high.corr.index.new))
+high.corr.index <- matrix(which(names(data.0) %in% name.list), nrow=nrow(high.corr.index.new))
 high.corr.index
+
+#indices des variables corrélées
+indices.corr <- c(high.corr.index[,1], high.corr.index[,2])
+indices.corr
+
+#plot des variables corrélées
+corrplot(cor(data.0[,indices.corr]))
 
 #On retirera high.corr.index[,1]
 indices.retires <- c(indices.retires, high.corr.index[,1])
