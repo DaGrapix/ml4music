@@ -228,11 +228,142 @@ ModAIC <- glm(formula=formula.AIC, family=binomial, data=data.train)
 
 ############################    Q4
 
+load("step.RData")
+## ModT apprentissage
+predproba_train_ModT=predict(ModT,type="response") # ModT est le résultat de glm
+pred_train_ModT = prediction(predproba_train_ModT,data.train$y) 
+AUC_train_ModT<-round(performance(pred_train_ModT, 'auc')@y.values[[1]],2) #AUC
+
+
+
+## ModT test
+predproba_test_ModT=predict(ModT,newdata=data.test,type="response")
+pred_test_ModT=prediction(predproba_test_ModT,data.test$y)
+AUC_test_ModT<-round(performance(pred_test_ModT, 'auc')@y.values[[1]],2) #AUC
+
+
+
+## Mod0 test
+
+predproba_test_Mod0=predict(Mod0,newdata=data.test.0,type="response")
+pred_test_Mod0=prediction(predproba_test_Mod0,data.test.0$y)
+AUC_Mod0<-round(performance(pred_test_Mod0, 'auc')@y.values[[1]],2) #AUC
+
+## Mod1 test
+
+predproba_test_Mod1=predict(Mod1,newdata=data.test,type="response")
+pred_test_Mod1=prediction(predproba_test_Mod1,data.test$y)
+AUC_Mod1<-round(performance(pred_test_Mod1, 'auc')@y.values[[1]],2) #AUC
+
+## Mod2 test
+
+predproba_test_Mod2=predict(Mod2,newdata=data.test,type="response")
+pred_test_Mod2=prediction(predproba_test_Mod2,data.test$y)
+AUC_Mod2<-round(performance(pred_test_Mod2, 'auc')@y.values[[1]],2) #AUC
+
+
+## ModAIC test
+
+predproba_test_ModAIC=predict(ModAIC,newdata=data.test,type="response")
+pred_test_ModAIC=prediction(predproba_test_ModAIC,data.test$y)
+AUC_ModAIC<-round(performance(pred_test_ModAIC, 'auc')@y.values[[1]],2) #AUC
+
+## Définition de nos légendes
+l_train_ModT<-paste("Apprentissage ModT, AUC=",AUC_train_ModT,sep=" ")
+l_test_ModT<-paste("Test  ModT, AUC=",AUC_test_ModT,sep=" ")
+l_Mod0<-paste("Test Mod0, AUC=",AUC_Mod0,sep=" ")
+l_Mod1<-paste("Test Mod1, AUC=",AUC_Mod1,sep=" ")
+l_Mod2<-paste("Test Mod2, AUC=",AUC_Mod2,sep=" ")
+l_AIC<-paste("Test ModAIC, AUC=",AUC_ModAIC,sep=" ")
+
+## Tracé de nos courbes ROC
+
+plot(performance(pred_train_ModT,"sens","fpr"),xlab="",col="black",main="Courbes ROC de nos différents modèles") # ROC
+plot(performance(pred_test_ModT,"sens","fpr"),xlab="",col="purple",add=TRUE)
+plot(performance(pred_test_Mod0,"sens","fpr"),xlab="",col="blue",add=TRUE)
+plot(performance(pred_test_Mod1,"sens","fpr"),xlab="",col="yellow",add=TRUE)
+plot(performance(pred_test_Mod2,"sens","fpr"),xlab="",col="green",add=TRUE)
+plot(performance(pred_test_ModAIC,"sens","fpr"),xlab="",col="orange",add=TRUE)
+abline(a=0, b=1, col="#33FF66",lty=2)
+abline(v=0,col="#003300",lty=2)
+abline(h=1,col="#003300",lty=2)
+
+
+legend("bottomright",legend=c(l_train_ModT,l_test_ModT,l_Mod0,l_Mod1,l_Mod2,l_AIC,"Règle aléatoire","Règle Parfaite"),lty=c(1,1,1,1,1,1,2,2),col=c("black","purple","blue","yellow","green","orange","#33FF66","#003300"))
 
 
 
 
+############################    Q5
 
+
+predproba_train_Mod0=predict(Mod0,type="response") 
+predproba_train_Mod1=predict(Mod1,type="response") 
+predproba_train_Mod2=predict(Mod2,type="response") 
+predproba_train_ModAIC=predict(ModAIC,type="response") 
+
+## ModT
+
+class_train_ModT=ifelse(predproba_train_ModT>=0.5,1,0)
+class_test_ModT=ifelse(predproba_test_ModT>=0.5,1,0)
+
+## Mod0
+
+class_train_Mod0=ifelse(predproba_train_Mod0>=0.5,1,0)
+class_test_Mod0=ifelse(predproba_test_Mod0>=0.5,1,0)
+
+## Mod1
+
+class_train_Mod1=ifelse(predproba_train_Mod1>=0.5,1,0)
+class_test_Mod1=ifelse(predproba_test_Mod1>=0.5,1,0)
+
+## Mod2
+
+class_train_Mod2=ifelse(predproba_train_Mod2>=0.5,1,0)
+class_test_Mod2=ifelse(predproba_test_Mod2>=0.5,1,0)
+
+## ModAIC
+
+class_train_ModAIC=ifelse(predproba_train_ModAIC>=0.5,1,0)
+class_test_ModAIC=ifelse(predproba_test_ModAIC>=0.5,1,0)
+
+## Calcul des erreurs
+
+## ModT
+err_train_ModT<-round(mean(class_train_ModT!=data.train$y),3)
+err_test_ModT<-round(mean(class_test_ModT!=data.test$y),3)
+
+
+
+## Mod0
+
+err_train_Mod0<-round(mean(class_train_Mod0!=data.train.0$y),3)
+err_test_Mod0<-round(mean(class_test_Mod0!=data.test.0$y),3)
+
+## Mod1
+
+err_train_Mod1<-round(mean(class_train_Mod1!=data.train$y),3)
+err_test_Mod1<-round(mean(class_test_Mod1!=data.test$y),3)
+
+## Mod2 
+
+err_train_Mod2<-round(mean(class_train_Mod2!=data.train$y),3)
+err_test_Mod2<-round(mean(class_test_Mod2!=data.test$y),3)
+
+
+## ModAIC
+
+err_train_ModAIC<-round(mean(class_train_ModAIC!=data.train$y),3)
+err_test_ModAIC<-round(mean(class_test_ModAIC!=data.test$y),3)
+
+err_train<-c(err_train_ModT,err_train_Mod0,err_train_Mod1,err_train_Mod2,err_train_ModAIC)
+err_test<-c(err_test_ModT,err_test_Mod0,err_test_Mod1,err_test_Mod2,err_test_ModAIC)
+
+err<-data.frame(Apprentissage=err_train,Test=err_test)
+
+rownames(err)<-c("ModT","Mod0","Mod1","Mod2","ModAIC")
+
+print(err)
 
 
 
