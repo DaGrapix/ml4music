@@ -47,7 +47,7 @@ proportion.jazz
 
 #On sauvegarde les indices variables à retirer
 #Ici on retirera les variables en double
-indices.retires <- c(128:147)
+indices.retires <- c(148:167)
 
 ## Analyse de densité des variables PAR_SC, PAR_SCV et PAR_ASC_V
 density_plot <- function(X,xlab,lxlab){
