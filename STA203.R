@@ -419,7 +419,7 @@ y.test <- data.test[,ncol(data.test)]
 
 
 ############################    Q2
-
+par(mfrow=c(1,1))
 
 
 grid <- 10^seq(10, -2, length=100)
@@ -460,7 +460,7 @@ max.coefs
 
 
 ## Plot de l'evolution des coefficients, en ayant retire ceux qui explosent
-matplot(apply(abs(coef.ridge[-max.coefs,]) ,2 ,sum), t(coef.ridge[-max.coefs,]), main="ridge",
+matplot(apply(abs(coef.ridge[-max.coefs,]) ,2 ,sum), t(coef.ridge[-max.coefs,]),
         col=1:10, lty=1:10, type="l", xlab="norme L1", ylab="coefficients")
 
 
