@@ -9,6 +9,7 @@ library(cowplot)
 library(ROCR)
 library(MASS)
 library(glmnet)
+library(corrplot)
 
 setwd(getwd())
 rm(list=ls())
@@ -428,6 +429,7 @@ ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=grid, family="binomial
 
 ridge.fit$dim
 plot(ridge.fit)
+plot(ridge.fit, xvar = "lambda")
 #On remarque que 2 voire 3 coefficients ont un comportement different des autres et explosent
 
 
@@ -503,15 +505,17 @@ ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=bestlam, family="binom
 
 
 ## Erreur d'apprentissage
-ridge.pred.train = predict(ridge.fit, s=bestlam, newx=x.train)
-mean((ridge.pred.train - y.train)^2)
-#14.26256
+ridge.pred.train = predict(cv.out, alpha=0, s=bestlam, newx=x.train)
+err.train.ridge <- round(mean((ridge.pred.train - y.train)^2), 3)
+err.train.ridge
+#0.089
 
 
 ## Erreur de généralisation
-ridge.pred.test = predict(ridge.fit, s=bestlam, newx=x.test)
-mean((ridge.pred.test - y.test)^2)
-#15.71024
+ridge.pred.test = predict(cv.out, alpha=0, s=bestlam, newx=x.test)
+err.test.ridge <- round(mean((ridge.pred.test - y.test)^2), 3)
+err.test.ridge
+#0.098
 
 
 
@@ -546,19 +550,19 @@ plot(cv.out.0)
 bestlam.0
 #on trouve lambda=0.0007390722
 
-ridge.fit.0 <- glmnet(x=x.train.0, y=y.train.0, alpha=0, lambda=bestlam.0, family="binomial")
-
 
 ## Erreur d'apprentissage
-ridge.pred.train.0 = predict(ridge.fit.0, s=bestlam.0, newx=x.train.0)
-mean((ridge.pred.train.0 - y.train.0)^2)
-#15.49832
+ridge.pred.train.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.train.0)
+err.train.ridge.0 <- round(mean((ridge.pred.train.0 - y.train.0)^2), 3)
+err.train.ridge.0
+#0.088
 
 
 ## Erreur de généralisation
-ridge.pred.test.0 = predict(ridge.fit.0, s=bestlam.0, newx=x.test.0)
-mean((ridge.pred.test.0 - y.test.0)^2)
-#17.14912
+ridge.pred.test.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.test.0)
+err.test.ridge.0 <- round(mean((ridge.pred.test.0 - y.test.0)^2), 3)
+err.test.ridge.0
+#0.098
 
 #Les erreurs sont plus élevées ici,
 #Ce modèle est moins bon que le précédent.
