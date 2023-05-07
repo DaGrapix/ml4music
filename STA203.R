@@ -430,6 +430,9 @@ prepare.data <- function(){
   data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
   data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
   
+  data.0$PAR_SC_V <- log(data.0$PAR_SC_V)
+  data.0$PAR_ASC_V <- log(data.0$PAR_ASC_V)
+  
   indices.retires <- c(148:167)
   data <- data.0[, -indices.retires]
   
@@ -575,7 +578,7 @@ bestlam=cv.out$lambda.min
 plot(cv.out)
 
 bestlam
-#on trouve 0.0007390722 qui n'est pas sur la frontière, c'est le lambda optimal.
+#on trouve 0.0009390722 qui n'est pas sur la frontière, c'est le lambda optimal.
 
 
 
@@ -583,14 +586,14 @@ bestlam
 ridge.pred.train = predict(cv.out, alpha=0, s=bestlam, newx=x.train)
 err.train.ridge <- mean((ridge.pred.train - y.train)^2)
 err.train.ridge
-#0.08827494
+#0.08889463
 
 
 ## Erreur de généralisation
 ridge.pred.test = predict(cv.out, alpha=0, s=bestlam, newx=x.test)
 err.test.ridge <- mean((ridge.pred.test - y.test)^2)
 err.test.ridge
-#0.09808341
+#0.09833456
 
 
 
@@ -623,21 +626,21 @@ bestlam.0 <- cv.out.0$lambda.min
 plot(cv.out.0)
 
 bestlam.0
-#on trouve lambda=0.0005214008
+#on trouve lambda=0.0007390722
 
 
 ## Erreur d'apprentissage
 ridge.pred.train.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.train.0)
 err.train.ridge.0 <- mean((ridge.pred.train.0 - y.train.0)^2)
 err.train.ridge.0
-#0.0875637
+#0.08814747
 
 
 ## Erreur de généralisation
 ridge.pred.test.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.test.0)
 err.test.ridge.0 <- mean((ridge.pred.test.0 - y.test.0)^2)
 err.test.ridge.0
-#0.0976252
+#0.09782697
 
 
 
@@ -665,6 +668,9 @@ library(doParallel)
 prepare.data <- function(){
   data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
   data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  
+  data.0$PAR_SC_V <- log(data.0$PAR_SC_V)
+  data.0$PAR_ASC_V <- log(data.0$PAR_ASC_V)
   
   indices.retires <- c(148:167)
   data <- data.0[, -indices.retires]
@@ -733,7 +739,7 @@ err.train.knn.1
 knn.pred.test.1 <- predict(knn.1, newdata = x.test)
 err.test.knn.1 <- mean(knn.pred.test.1 != y.test)
 err.test.knn.1
-#0.05520615
+#0.0580014
 
 ## Validation croisée
 set.seed(556)
@@ -762,8 +768,13 @@ err.train.knn
 knn.pred.test <- predict(knn,newdata = x.test)
 err.test.knn <- mean(knn.pred.test != y.test)
 err.test.knn
-#0.05520615
+#0.0580014
 
+
+unregister_dopar <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}
 
 
 ### Dataset complet
@@ -782,7 +793,7 @@ knn.ctrl <- trainControl(method="cv", number=10)
 
 ## modele k=1
 k.1 <- expand.grid(k=1)
-knn.1.0 <- train(x=x.train.0, y=y.train.0, method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
+knn.1.0 <- train(x=x.train.0, y=as.factor(y.train.0), method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
 
 print(knn.1.0)
 
@@ -795,7 +806,7 @@ err.train.knn.1.0
 knn.pred.test.1.0 <- predict(knn.1.0, newdata = x.test.0)
 err.test.knn.1.0 <- mean(knn.pred.test.1.0 != y.test.0)
 err.test.knn.1.0
-#0.04961565
+#0.05101328
 
 ## Validation croisée
 set.seed(556)
@@ -824,4 +835,4 @@ err.train.knn.0
 knn.pred.test.0 <- predict(knn.0,newdata = x.test.0)
 err.test.knn.0 <- mean(knn.pred.test.0 != y.test.0)
 err.test.knn.0
-#0.04961565
+#0.05101328
