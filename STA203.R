@@ -10,6 +10,9 @@ library(ROCR)
 library(MASS)
 library(glmnet)
 library(corrplot)
+library(caret)
+library(class)
+library(doParallel)
 
 setwd(getwd())
 rm(list=ls())
@@ -87,12 +90,15 @@ density_plot(data.0$PAR_SC_V, xlab="PAR_SC_V", lxlab="log(PAR_SC_V)")
 data <- data.0[, -indices.retires]
 corr <- cor(x=data[, -ncol(data)])
 
+
+corr.0 <- cor(x=data.0[, -ncol(data.0)])
 #selection des indices de la matrice de correlation > 0.99
 high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
 
 #selection des indices appartenant a la matrice triangulaire inferieure stricte,
 #pour retirer les doublons, ainsi que les elements diagonaux.
 lower.tri <- lower.tri(corr, diag=FALSE)
+#ne sélectionne que les lignes dont les indices sont dans le triangle inférieur
 high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
 high.corr.index.new
 
@@ -144,7 +150,7 @@ plot(x=data.mean.SFMV, y=data.0$PAR_SFM_MV, xlab="mean(PAR_SFMV)", ylab="PAR_SFM
 #auxquelles elles sont associées, elles n'apportent pas d'information, on les retire.
 
 #Indice des variables dans le dataframe original.
-indices.4 <- which(names(data) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+indices.4 <- which(names(data.0) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
 
 #On obtient ainsi la liste finale de toutes les variables que l'on va retirer du dataframe.
 indices.retires <- c(indices.retires, indices.4)
@@ -176,6 +182,9 @@ data.test <- data.test.0[, -indices.retires]
 dim(data)
 dim(data.train)
 dim(data.test)
+
+
+
 
 
 ############################    Q3
@@ -396,6 +405,57 @@ print(err)
 ############# Partie 2 #############
 ####################################
 
+rm(list=ls())
+
+#Importation et nettoyage des donnees
+prepare.data <- function(){
+  data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  
+  indices.retires <- c(148:167)
+  data <- data.0[, -indices.retires]
+  
+  corr <- cor(x=data[, -ncol(data)])
+  high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
+  lower.tri <- lower.tri(corr, diag=FALSE)
+  high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+  correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                                   names(data)[high.corr.index.new[,2]]),
+                                 nrow=nrow(high.corr.index.new))
+  name.list <- as.vector(correlated.variables)
+  high.corr.index <- matrix(which(names(data.0) %in% name.list), nrow=nrow(high.corr.index.new))
+  
+  indices.retires <- c(indices.retires, high.corr.index[,1])
+  
+  indices.4 <- which(names(data.0) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+  indices.retires <- c(indices.retires, indices.4)
+  
+  names(data.0)[ncol(data.0)] = "y"
+  data.0$y <- ifelse(data.0$y=="Jazz", 1, 0)
+  
+  ## Echantillon d'apprentissage
+  set.seed(103)
+  train = sample(c(TRUE,FALSE), nrow(data.0), rep=TRUE, prob=c(2/3,1/3))
+  
+  #On retirera les variables plus tard
+  data.train.0 <- data.0[which(train),]
+  data.test.0 <- data.0[which(train==FALSE),]
+  
+  #On retire les 27 variables
+  data <- data.0[, -indices.retires]
+  data.train <- data.train.0[, -indices.retires]
+  data.test <- data.test.0[, -indices.retires]
+  
+  return(list(data=data, data.train=data.train, data.test=data.test, data.0=data.0, data.train.0=data.train.0, data.test.0=data.test.0))
+}
+
+df <- prepare.data()
+data <- df$data
+data.train <- df$data.train
+data.test <- df$data.test
+data.0 <- df$data.0
+data.train.0 <- df$data.train.0
+data.test.0 <- df$data.test.0
 
 ############################    Q1
 
@@ -407,7 +467,7 @@ high.corr.index <- sapply(threshold, FUN=function(x) (nrow(which(corr > x, arr.i
 high.corr.index
 
 # Meme après avoir retiré les variables de la partie 1,
-# 108 couples de variables ont un coefficient de correlation > 75%
+# 109 couples de variables ont un coefficient de correlation > 75%
 # 21  couples de variables ont un coefficient de correlation > 90%
 
 
@@ -497,22 +557,22 @@ bestlam=cv.out$lambda.min
 plot(cv.out)
 
 bestlam
-#on trouve 0.0009326033 qui n'est pas sur la frontière, c'est le lambda optimal.
+#on trouve 0.0007390722 qui n'est pas sur la frontière, c'est le lambda optimal.
 
 
 
 ## Erreur d'apprentissage
 ridge.pred.train = predict(cv.out, alpha=0, s=bestlam, newx=x.train)
-err.train.ridge <- round(mean((ridge.pred.train - y.train)^2), 3)
+err.train.ridge <- mean((ridge.pred.train - y.train)^2)
 err.train.ridge
-#0.089
+#0.08827494
 
 
 ## Erreur de généralisation
 ridge.pred.test = predict(cv.out, alpha=0, s=bestlam, newx=x.test)
-err.test.ridge <- round(mean((ridge.pred.test - y.test)^2), 3)
+err.test.ridge <- mean((ridge.pred.test - y.test)^2)
 err.test.ridge
-#0.098
+#0.09808341
 
 
 
@@ -533,7 +593,7 @@ bestlam.0 <- cv.out.0$lambda.min
 plot(cv.out.0)
 
 bestlam.0
-#meme situation
+#meme problème
 
 
 #nouvelle grid
@@ -545,26 +605,133 @@ bestlam.0 <- cv.out.0$lambda.min
 plot(cv.out.0)
 
 bestlam.0
-#on trouve lambda=0.0007390722
+#on trouve lambda=0.0005214008
 
 
 ## Erreur d'apprentissage
 ridge.pred.train.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.train.0)
-err.train.ridge.0 <- round(mean((ridge.pred.train.0 - y.train.0)^2), 3)
+err.train.ridge.0 <- mean((ridge.pred.train.0 - y.train.0)^2)
 err.train.ridge.0
-#0.088
+#0.0875637
 
 
 ## Erreur de généralisation
 ridge.pred.test.0 = predict(cv.out.0, alpha=0, s=bestlam.0, newx=x.test.0)
-err.test.ridge.0 <- round(mean((ridge.pred.test.0 - y.test.0)^2), 3)
+err.test.ridge.0 <- mean((ridge.pred.test.0 - y.test.0)^2)
 err.test.ridge.0
-#0.098
+#0.0976252
 
-#Les erreurs sont plus élevées ici,
-#Ce modèle est moins bon que le précédent.
+
 
 
 ####################################
 ############# Partie 3 #############
 ####################################
+
+rm(list=objects())
+
+#Importation et nettoyage des donnees
+prepare.data <- function(){
+  data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  
+  indices.retires <- c(148:167)
+  data <- data.0[, -indices.retires]
+  
+  corr <- cor(x=data[, -ncol(data)])
+  high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
+  lower.tri <- lower.tri(corr, diag=FALSE)
+  high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+  correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                                   names(data)[high.corr.index.new[,2]]),
+                                 nrow=nrow(high.corr.index.new))
+  name.list <- as.vector(correlated.variables)
+  high.corr.index <- matrix(which(names(data.0) %in% name.list), nrow=nrow(high.corr.index.new))
+  
+  indices.retires <- c(indices.retires, high.corr.index[,1])
+  
+  indices.4 <- which(names(data.0) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+  indices.retires <- c(indices.retires, indices.4)
+  
+  names(data.0)[ncol(data.0)] = "y"
+  data.0$y <- ifelse(data.0$y=="Jazz", 1, 0)
+  
+  ## Echantillon d'apprentissage
+  set.seed(103)
+  train = sample(c(TRUE,FALSE), nrow(data.0), rep=TRUE, prob=c(2/3,1/3))
+  
+  #On retirera les variables plus tard
+  data.train.0 <- data.0[which(train),]
+  data.test.0 <- data.0[which(train==FALSE),]
+  
+  #On retire les 27 variables
+  data <- data.0[, -indices.retires]
+  data.train <- data.train.0[, -indices.retires]
+  data.test <- data.test.0[, -indices.retires]
+  
+  return(list(data=data, data.train=data.train, data.test=data.test, data.0=data.0, data.train.0=data.train.0, data.test.0=data.test.0))
+}
+
+df <- prepare.data()
+data <- df$data
+data.train <- df$data.train
+data.test <- df$data.test
+
+
+x.train <- data.train[,-ncol(data.train)] %>% as.matrix()
+y.train <- data.train[,ncol(data.train)] %>% as.factor()
+
+x.test <- data.test[,-ncol(data.test)] %>% as.matrix()
+y.test <- data.test[,ncol(data.test)] %>% as.factor()
+
+knn.ctrl <- trainControl(method="cv", number=10)
+
+## modele k=1
+k.1 <- expand.grid(k=1)
+knn.1 <- train(x=x.train, y=y.train, method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
+
+print(knn.1)
+
+#Erreurs
+knn.pred.train.1 <- predict(knn.1, newdata = x.train)
+err.train.knn.1 <- mean(knn.pred.train.1 != y.train)
+err.train.knn.1
+#0
+
+knn.pred.test.1 <- predict(knn.1, newdata = x.test)
+err.test.knn.1 <- mean(knn.pred.test.1 != y.test)
+err.test.knn.1
+#0.05520615
+
+## Validation croisée
+set.seed(556)
+k.grid <- expand.grid(k=1:30)
+
+#Calculs paralleles
+cl <- makePSOCKcluster(7)
+registerDoParallel(cl)
+
+#choix du modèle optimal
+knn <- train(x=x.train, y=as.factor(y.train), method="knn", trControl=knn.ctrl, tuneGrid=k.grid, preProcess=c("center", "scale"))
+
+stopCluster(cl)
+
+
+print(knn)
+#meilleur modèle obtenu pour k=1
+plot(knn)
+
+#Erreurs
+knn.pred.train <- predict(knn, newdata = x.train)
+err.train.knn <- mean(knn.pred.train != y.train)
+err.train.knn
+#0
+
+knn.pred.test <- predict(knn,newdata = x.test)
+err.test.knn <- mean(knn.pred.test != y.test)
+err.test.knn
+#0.05520615
+
+
+
+
