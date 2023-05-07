@@ -96,7 +96,7 @@ corr.0 <- cor(x=data.0[, -ncol(data.0)])
 high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
 
 #selection des indices appartenant a la matrice triangulaire inferieure stricte,
-#pour retirer les doublons, ainsi que les elements diagonaux.
+#pour retirer les doublons, ainsi que les éléments diagonaux.
 lower.tri <- lower.tri(corr, diag=FALSE)
 #ne sélectionne que les lignes dont les indices sont dans le triangle inférieur
 high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
@@ -211,7 +211,7 @@ formula.Mod1 <- as.formula(paste("y ~", paste(var.Mod1, collapse="+")))
 Mod1<-glm(formula <- formula.Mod1, family=binomial, data=data.train)
 summary(Mod1)
 
-#On sélectionne les variables dont le coefficient a un niveau de significativité de 20% et on crée la formule de notre modèle Mod1
+#On sélectionne les variables dont le coefficient a un niveau de significativité de 20% et on crée la formule de notre modèle Mod2
 index.var.Mod2 <- which(p_value>0.2)
 var.Mod2 <- names(data[index.var.Mod2])
 formula.Mod2 <- as.formula(paste("y ~", paste(var.Mod2, collapse="+")))
@@ -313,11 +313,14 @@ legend("bottomright",legend=c(l_train_ModT,l_test_ModT,l_Mod0,l_Mod1,l_Mod2,l_AI
 
 ############################    Q5
 
+## Calcul des probabilités sur l'échantillon d'apprentissage
 
 predproba_train_Mod0=predict(Mod0,type="response") 
 predproba_train_Mod1=predict(Mod1,type="response") 
 predproba_train_Mod2=predict(Mod2,type="response") 
 predproba_train_ModAIC=predict(ModAIC,type="response") 
+
+## On met à 1 si la probabilité est >= 0.5, 0 sinon.
 
 ## ModT
 
@@ -375,6 +378,9 @@ err_test_ModAIC<-round(mean(class_test_ModAIC!=data.test$y),3)
 
 err_train<-c(err_train_ModT,err_train_Mod0,err_train_Mod1,err_train_Mod2,err_train_ModAIC)
 err_test<-c(err_test_ModT,err_test_Mod0,err_test_Mod1,err_test_Mod2,err_test_ModAIC)
+
+
+## On crée un dataframe qui résume nos erreurs 
 
 err<-data.frame(Apprentissage=err_train,Test=err_test)
 
