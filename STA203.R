@@ -404,8 +404,20 @@ print(err)
 ####################################
 ############# Partie 2 #############
 ####################################
-
 rm(list=ls())
+
+library(ggplot2)
+library(plyr)
+library(stats)
+library(tidyverse)
+library(cowplot)
+library(ROCR)
+library(MASS)
+library(glmnet)
+library(corrplot)
+library(caret)
+library(class)
+library(doParallel)
 
 #Importation et nettoyage des donnees
 prepare.data <- function(){
@@ -630,6 +642,19 @@ err.test.ridge.0
 
 rm(list=objects())
 
+library(ggplot2)
+library(plyr)
+library(stats)
+library(tidyverse)
+library(cowplot)
+library(ROCR)
+library(MASS)
+library(glmnet)
+library(corrplot)
+library(caret)
+library(class)
+library(doParallel)
+
 #Importation et nettoyage des donnees
 prepare.data <- function(){
   data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
@@ -677,6 +702,7 @@ data <- df$data
 data.train <- df$data.train
 data.test <- df$data.test
 
+### Dataset reduit
 
 x.train <- data.train[,-ncol(data.train)] %>% as.matrix()
 y.train <- data.train[,ncol(data.train)] %>% as.factor()
@@ -734,4 +760,62 @@ err.test.knn
 
 
 
+### Dataset complet
+data.0 <- df$data.0
+data.train.0 <- df$data.train.0
+data.test.0 <- df$data.test.0
 
+x.train.0 <- data.train.0[,-ncol(data.train.0)] %>% as.matrix()
+y.train.0 <- data.train.0[,ncol(data.train.0)] %>% as.factor()
+
+x.test.0 <- data.test.0[,-ncol(data.test.0)] %>% as.matrix()
+y.test.0 <- data.test.0[,ncol(data.test.0)] %>% as.factor()
+
+knn.ctrl <- trainControl(method="cv", number=10)
+
+
+## modele k=1
+k.1 <- expand.grid(k=1)
+knn.1.0 <- train(x=x.train.0, y=y.train.0, method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
+
+print(knn.1.0)
+
+#Erreurs
+knn.pred.train.1.0 <- predict(knn.1.0, newdata = x.train.0)
+err.train.knn.1.0 <- mean(knn.pred.train.1.0 != y.train.0)
+err.train.knn.1.0
+#0
+
+knn.pred.test.1.0 <- predict(knn.1.0, newdata = x.test.0)
+err.test.knn.1.0 <- mean(knn.pred.test.1.0 != y.test.0)
+err.test.knn.1.0
+#0.04961565
+
+## Validation croisée
+set.seed(556)
+k.grid <- expand.grid(k=1:30)
+
+#Calculs paralleles
+cl <- makePSOCKcluster(7)
+registerDoParallel(cl)
+
+#choix du modèle optimal
+knn.0 <- train(x=x.train.0, y=y.train.0, method="knn", trControl=knn.ctrl, tuneGrid=k.grid, preProcess=c("center", "scale"))
+
+stopCluster(cl)
+
+
+print(knn.0)
+#meilleur modèle obtenu pour k=1
+plot(knn.0)
+
+#Erreurs
+knn.pred.train.0 <- predict(knn.0, newdata = x.train.0)
+err.train.knn.0 <- mean(knn.pred.train.0 != y.train.0)
+err.train.knn.0
+#0
+
+knn.pred.test.0 <- predict(knn.0,newdata = x.test.0)
+err.test.knn.0 <- mean(knn.pred.test.0 != y.test.0)
+err.test.knn.0
+#0.04961565
