@@ -500,9 +500,6 @@ bestlam
 #on trouve 0.0009326033 qui n'est pas sur la frontière, c'est le lambda optimal.
 
 
-ridge.fit <- glmnet(x=x.train, y=y.train, alpha=0, lambda=bestlam, family="binomial")
-
-
 
 ## Erreur d'apprentissage
 ridge.pred.train = predict(cv.out, alpha=0, s=bestlam, newx=x.train)
