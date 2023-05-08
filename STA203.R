@@ -742,7 +742,7 @@ prepare.data <- function(){
   data <- data.0[, -indices.retires]
   data.train <- data.train.0[, -indices.retires]
   data.test <- data.test.0[, -indices.retires]
-  
+  print(indices.retires)
   return(list(data=data, data.train=data.train, data.test=data.test, data.0=data.0, data.train.0=data.train.0, data.test.0=data.test.0))
 }
 
@@ -873,3 +873,131 @@ knn.pred.test.0 <- predict(knn.0,newdata = x.test.0)
 err.test.knn.0 <- mean(knn.pred.test.0 != y.test.0)
 err.test.knn.0
 #0.05101328
+
+
+
+
+####################################
+########### Prédictions ############
+####################################
+
+rm(list=objects())
+
+setwd(getwd())
+
+library(glmnet)
+
+
+#Importation et nettoyage des donnees
+prepare.data <- function(){
+  data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  
+  data.0$PAR_SC_V <- log(data.0$PAR_SC_V)
+  data.0$PAR_ASC_V <- log(data.0$PAR_ASC_V)
+  
+  indices.retires <- c(148:167)
+  data <- data.0[, -indices.retires]
+  
+  corr <- cor(x=data[, -ncol(data)])
+  high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
+  lower.tri <- lower.tri(corr, diag=FALSE)
+  high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+  correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                                   names(data)[high.corr.index.new[,2]]),
+                                 nrow=nrow(high.corr.index.new))
+  name.list <- as.vector(correlated.variables)
+  high.corr.index <- matrix(which(names(data.0) %in% name.list), nrow=nrow(high.corr.index.new))
+  
+  indices.retires <- c(indices.retires, high.corr.index[,1])
+  
+  indices.4 <- which(names(data.0) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+  indices.retires <- c(indices.retires, indices.4)
+  
+  names(data.0)[ncol(data.0)] = "y"
+  data.0$y <- ifelse(data.0$y=="Jazz", 1, 0)
+  
+  ## Echantillon d'apprentissage
+  set.seed(103)
+  train = sample(c(TRUE,FALSE), nrow(data.0), rep=TRUE, prob=c(2/3,1/3))
+  
+  #On retirera les variables plus tard
+  data.train.0 <- data.0[which(train),]
+  data.test.0 <- data.0[which(train==FALSE),]
+  
+  #On retire les 27 variables
+  data <- data.0[, -indices.retires]
+  data.train <- data.train.0[, -indices.retires]
+  data.test <- data.test.0[, -indices.retires]
+  
+  return(list(data=data, data.train=data.train, data.test=data.test, data.0=data.0, data.train.0=data.train.0, data.test.0=data.test.0))
+}
+
+
+prepare.data.unlabelled <- function(filename){
+  data <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
+  
+  data.unlabelled <- read.csv(filename,sep=";",header=TRUE)
+  
+  data.unlabelled$PAR_SC_V <- log(data.unlabelled$PAR_SC_V)
+  data.unlabelled$PAR_ASC_V <- log(data.unlabelled$PAR_ASC_V)
+  
+  
+  ##indices à retirer
+  indices.retires <- c(148:167)
+  data <- data.0[, -indices.retires]
+  
+  corr <- cor(x=data[, -ncol(data)])
+  high.corr.index.new <- which(corr>0.99, arr.ind = TRUE) %>% unname
+  lower.tri <- lower.tri(corr, diag=FALSE)
+  high.corr.index.new <- high.corr.index.new[which(lower.tri[high.corr.index.new]==TRUE),]
+  correlated.variables <- matrix(c(names(data)[high.corr.index.new[,1]], 
+                                   names(data)[high.corr.index.new[,2]]),
+                                 nrow=nrow(high.corr.index.new))
+  name.list <- as.vector(correlated.variables)
+  high.corr.index <- matrix(which(names(data.0) %in% name.list), nrow=nrow(high.corr.index.new))
+  
+  indices.retires <- c(indices.retires, high.corr.index[,1])
+  
+  indices.4 <- which(names(data.0) %in% c("PAR_ASE_M", "PAR_ASE_MV", "PAR_SFM_M", "PAR_SFM_MV"))
+  indices.retires <- c(indices.retires, indices.4)
+  
+  #On retire les variables
+  data.unlabelled <- data.unlabelled[, -indices.retires]
+
+  return(data.unlabelled)
+}
+
+
+df <- prepare.data()
+
+#On entraîne le modèle sur tout les individus du dataset
+data.train <- df$data
+
+data.unlabelled <- prepare.data.unlabelled("Music_test.txt")
+
+
+x.train <- data.train[,-ncol(data.train)] %>% as.matrix()
+y.train <- data.train[,ncol(data.train)]
+
+x.unlabelled <- data.unlabelled %>% as.matrix()
+
+#Modèle de régression ridge
+set.seed(314)
+grid <- 10^seq(0, -5, length=100)
+cv.out <- cv.glmnet(x=x.train, y=y.train, lambda=grid, nfolds=10)
+bestlam=cv.out$lambda.min
+plot(cv.out)
+
+bestlam
+#on trouve 0.0009326033 qui n'est pas sur la frontière, c'est le lambda optimal.
+
+## Prédiction
+ridge.pred <- predict(cv.out, alpha=0, s=bestlam, newx=x.unlabelled)
+
+ridge.pred <- ifelse(abs(ridge.pred)<0.1, "Classical", "Jazz")
+ridge.pred
+
+prediction <- c(ridge.pred) %>% unname()
+write.table(prediction, file="KALAYDJIAN-OCCHIPINTI_test.txt", sep=": ", row.names=FALSE, col.names=FALSE, quote=FALSE)
