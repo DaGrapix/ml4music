@@ -1,6 +1,10 @@
 #Mini projet
 #Anthony Kalaydjian - Mathieu Occhipinti
 
+setwd(getwd())
+rm(list=ls())
+graphics.off()
+
 library(ggplot2)
 library(plyr)
 library(stats)
@@ -13,10 +17,6 @@ library(corrplot)
 library(caret)
 library(class)
 library(doParallel)
-
-setwd(getwd())
-rm(list=ls())
-graphics.off()
 
 
 ####################################
@@ -38,19 +38,54 @@ data.0 <- read.csv("Music_2023.txt",sep=";",header=TRUE)
 
 ## Analyse uni et bi variée
 
+my.plot = function(x, Y, xlab="", ylim=c()){
+  Y.bin <- ifelse(Y=="Jazz", 1, 0)
+  #plot(x, Y.bin, xlab=xlab, col=Y.bin+1, pch=Y.bin+1, ylab="Y", xlim=ylim);
+  boxplot(x~Y, xlab=xlab, horizontal=TRUE, ylim=ylim)
+}
+par(mfcol=c(1,1))
 
 
+my.plot(x=data.0$PAR_TC, Y=data.0$GENRE, xlab="PAR_TC")
+my.plot(x=data.0$PAR_3RMS_TCD, Y=data.0$GENRE, xlab="PAR_3RMS_TCD")
+my.plot(x=data.0$PAR_MFCCV15, Y=data.0$GENRE, xlab="PAR_MFCCV15")
+my.plot(x=data.0$PAR_1RMS_TCD, Y=data.0$GENRE, xlab="PAR_1RMS_TCD")
+my.plot(x=data.0$PAR_PEAK_RMS_TOT, Y=data.0$GENRE, xlab="PAR_PEAK_RMS_TOT")
+my.plot(x=data.0$PAR_ZCD, Y=data.0$GENRE, xlab="PAR_ZCD")
+
+par(mfrow=c(2,4))
+my.plot(x=data.0$PAR_ASE1, Y=data.0$GENRE, xlab="PAR_ASE1", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE5, Y=data.0$GENRE, xlab="PAR_ASE5", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE10, Y=data.0$GENRE, xlab="PAR_ASE10", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE15, Y=data.0$GENRE, xlab="PAR_ASE15", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE20, Y=data.0$GENRE, xlab="PAR_ASE20", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE25, Y=data.0$GENRE, xlab="PAR_ASE25", ylim=c(-0.25, -0.05))
+my.plot(x=data.0$PAR_ASE30, Y=data.0$GENRE, xlab="PAR_ASE30", ylim=c(-0.25, -0.05))
+#On observe que les valeurs prises par ASE augmentent en moyenne jusqu'à la 20ième variable
+#puis diminuent
+
+par(mfcol=c(1,1))
+
+ASE.names <- paste("PAR_ASE", c(1:34), sep="")
+ASE.indices <- which(names(data.0) %in% ASE.names)
+
+corr.ASE <- cor(data[,ASE.indices])
+corrplot(corr.ASE, title="Corr ASE")
+#corrélations plus élevées au niveau de la diagonale
 
 
+SFM.names <- paste("PAR_SFM", c(1:24), sep="")
+SFM.indices <- which(names(data.0) %in% SFM.names)
+
+corr.SFM <- cor(data[,SFM.indices])
+corrplot(corr.SFM, title="Corr SFM")
+#idem, avec même des anti-corrélations lorsque l'on s'en éloigne assez
 
 
-
-
-
-
-
-
-
+ASE.SFM.mix.indices <- c(paste("PAR_SFM", c(1:5), sep=""), ASE.names <- paste("PAR_ASE", c(1:5), sep=""))
+corr.ASE.SFM.mix <- cor(data[,ASE.SFM.mix.indices])
+corrplot(corr.ASE.SFM.mix)
+#matrice quasi-diagonale par blocs -> variables SFM et ASE décorrélées
 
 
 ## Proportion des genres musicaux
@@ -399,18 +434,12 @@ print(err)
 
 
 
-
-
-
-
-
-
-
-
 ####################################
 ############# Partie 2 #############
 ####################################
 rm(list=ls())
+
+setwd(getwd())
 
 library(ggplot2)
 library(plyr)
@@ -488,7 +517,7 @@ high.corr.index <- sapply(threshold, FUN=function(x) (nrow(which(corr > x, arr.i
 high.corr.index
 
 # Meme après avoir retiré les variables de la partie 1,
-# 109 couples de variables ont un coefficient de correlation > 75%
+# 108 couples de variables ont un coefficient de correlation > 75%
 # 21  couples de variables ont un coefficient de correlation > 90%
 
 
@@ -578,7 +607,7 @@ bestlam=cv.out$lambda.min
 plot(cv.out)
 
 bestlam
-#on trouve 0.0009390722 qui n'est pas sur la frontière, c'est le lambda optimal.
+#on trouve 0.0009326033 qui n'est pas sur la frontière, c'est le lambda optimal.
 
 
 
@@ -645,11 +674,19 @@ err.test.ridge.0
 
 
 
+
+
+
+
+
+
 ####################################
 ############# Partie 3 #############
 ####################################
 
 rm(list=objects())
+
+setwd(getwd())
 
 library(ggplot2)
 library(plyr)
@@ -770,12 +807,12 @@ err.test.knn <- mean(knn.pred.test != y.test)
 err.test.knn
 #0.0580014
 
-
-unregister_dopar <- function() {
+#Arreter tout calcul parallele
+unregister.dopar <- function() {
   env <- foreach:::.foreachGlobals
   rm(list=ls(name=env), pos=env)
 }
-
+unregister.dopar()
 
 ### Dataset complet
 data.0 <- df$data.0
@@ -793,7 +830,7 @@ knn.ctrl <- trainControl(method="cv", number=10)
 
 ## modele k=1
 k.1 <- expand.grid(k=1)
-knn.1.0 <- train(x=x.train.0, y=as.factor(y.train.0), method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
+knn.1.0 <- train(x=x.train.0, y=y.train.0, method="knn", trControl=knn.ctrl, tuneGrid=k.1, preProcess=c("center", "scale"))
 
 print(knn.1.0)
 
