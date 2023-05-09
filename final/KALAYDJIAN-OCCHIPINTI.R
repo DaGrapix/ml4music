@@ -93,7 +93,9 @@ proportion.classique <- mean(ifelse(data$GENRE=="Classical", 1, 0))
 proportion.jazz <- mean(ifelse(data$GENRE=="Jazz", 1, 0))
 
 proportion.classique
+#0.5310893
 proportion.jazz
+#0.4689107
 #Les deux catégories sont relativement équivalentes en taille, c'est bien pour la classification.
 
 
